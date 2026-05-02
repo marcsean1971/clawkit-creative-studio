@@ -16,7 +16,7 @@ Core phrase:
 - **Browse**: guide OpenClaw through a repeatable browser inspection protocol.
 - **Capture**: guide screenshots and optional video clips.
 - **Select**: choose the best screenshots for each launch asset.
-- **Audit**: decide whether the product is marketable yet.
+- **Audit**: decide whether the product is marketable yet and whether the app is strong enough to turn into public assets.
 - **Prove**: map every promotional claim to visible evidence.
 - **Launch**: create Product Hunt, social, and website promotional assets.
 - **Storyboard**: create short promo video plans from actual screens.
@@ -38,6 +38,7 @@ Core phrase:
 
 - Full-site crawl plan, not just homepage ingestion.
 - Product understanding before generation.
+- Creative Audit Mode before asset generation.
 - Real screenshots and user flows as source material.
 - Evidence-based claim review.
 - Lovable-specific launch workflow.
@@ -81,6 +82,7 @@ Search terms to support:
 6. Competitor comparison mode.
 7. Agency/client report mode.
 8. Direct handoff from ClawKit for Lovable project context.
+9. Website-to-promo creative audit reports for agencies and founders.
 
 ## Version 0.1.1 Upgrade
 
@@ -136,3 +138,12 @@ QA Demo Pack v1 makes the product easier to trust and sell:
 - `creative_sample_project_pack`: sample input/output for a fake SaaS or Lovable app.
 - `creative_quality_scorecard`: QA scoring for a completed Creative Studio run.
 - `creative_user_onboarding`: friendly guide, example requests, and decision paths.
+
+## Version 0.1.7 Upgrade
+
+Creative Audit Mode v1 makes the product feel intelligent before it creates assets:
+
+- `creative_product_audit`: full product, screen, trust, marketing, and fix-before-promotion audit.
+- Scores whether the product is blocked, needs work, promising, or ready to promote.
+- Identifies best screenshots, weak screens, missing trust signals, risky claims, and the recommended promo angle.
+- Creates Lovable fix prompts when the scanned app should be improved before promotion.

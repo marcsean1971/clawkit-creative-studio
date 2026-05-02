@@ -17,6 +17,7 @@ This is an early public release. It is useful now, and it will improve continuou
 - Guides OpenClaw to capture screenshots and optional video clips.
 - Builds a product intelligence brief from the captured evidence.
 - Scores whether the product is actually marketable yet.
+- Runs Creative Audit Mode before asset generation so weak screens, missing trust signals, risky claims, and best promo angles are clear.
 - Maps promotional claims back to visible evidence.
 - Creates launch packs, promotional image prompts, social copy, and video storyboards.
 - Reviews marketing claims so assets stay honest and safe.
@@ -41,6 +42,7 @@ The result is a launch pack based on what the product actually shows, not generi
 | `creative_scan_session_summary` | Summarizes visited routes, captures, blocked areas, errors, coverage, and next scan actions. |
 | `creative_site_intelligence` | Turns page observations and screenshots into a product understanding brief. |
 | `creative_marketability_audit` | Scores launch readiness and identifies weak screens, missing evidence, risky claims, and next fixes. |
+| `creative_product_audit` | Runs Creative Audit Mode across product understanding, screen quality, trust signals, promo angle, and fix-before-promotion actions. |
 | `creative_evidence_map` | Maps promotional claims to screenshots, page evidence, or user confirmations. |
 | `creative_capture_checklist` | Creates screenshot and optional video shot lists. |
 | `creative_capture_report` | Turns screenshot notes into an approved/weak/missing capture inventory. |
@@ -77,16 +79,17 @@ The result is a launch pack based on what the product actually shows, not generi
 6. Run `creative_scan_session_summary`.
 7. Run `creative_site_intelligence` with the page evidence.
 8. Run `creative_marketability_audit` to decide whether the app is ready for promotion.
-9. Run `creative_evidence_map` before writing strong claims.
-10. Run `creative_capture_checklist` if more shots are needed.
-11. Run `creative_capture_report` to inventory approved, weak, and missing shots.
-12. Run `creative_shot_selection` to choose the best screenshots for each launch asset.
-13. Run `creative_visual_issue_report` if screenshots reveal broken UI, poor mobile layout, weak copy, or runtime issues.
-14. Run `creative_launch_asset_matrix` to map assets to screenshots and supported claims.
-15. Run `creative_launch_pack`, `creative_image_prompt_pack`, or `creative_video_storyboard`.
-16. Run `creative_export_plan` when the user wants a reusable handoff package.
-17. Run `creative_launch_brief`, `creative_prompt_export`, `creative_social_copy_pack`, and `creative_client_handoff` as needed.
-18. Run `creative_asset_review` before publishing or sending assets to a client.
+9. Run `creative_product_audit` to understand the product, diagnose screens, choose the promo angle, and list fixes before asset generation.
+10. Run `creative_evidence_map` before writing strong claims.
+11. Run `creative_capture_checklist` if more shots are needed.
+12. Run `creative_capture_report` to inventory approved, weak, and missing shots.
+13. Run `creative_shot_selection` to choose the best screenshots for each launch asset.
+14. Run `creative_visual_issue_report` if screenshots reveal broken UI, poor mobile layout, weak copy, or runtime issues.
+15. Run `creative_launch_asset_matrix` to map assets to screenshots and supported claims.
+16. Run `creative_launch_pack`, `creative_image_prompt_pack`, or `creative_video_storyboard`.
+17. Run `creative_export_plan` when the user wants a reusable handoff package.
+18. Run `creative_launch_brief`, `creative_prompt_export`, `creative_social_copy_pack`, and `creative_client_handoff` as needed.
+19. Run `creative_asset_review` before publishing or sending assets to a client.
 
 ## Browser Scan
 
@@ -103,6 +106,8 @@ Browser Scan v1 makes the full-site promise repeatable.
 The first job is not to generate pretty assets. The first job is to know whether the product is ready to market.
 
 `creative_marketability_audit` checks the captured evidence and returns a readiness score, strongest screens, weak screens, supported claims, risky claims, missing evidence, recommended fixes, and asset priorities.
+
+`creative_product_audit` is the full Creative Audit Mode. It combines product intelligence, scan summary, screenshots, visual issues, and marketability findings into one decision report: what the app does, who it is for, the strongest selling points, weak or broken screens, missing trust signals, best screenshots, recommended promo angle, Lovable fix prompts when relevant, and the next workflow.
 
 `creative_evidence_map` connects each marketing claim to screenshots, page observations, video notes, or user confirmations. If a claim cannot be supported, the plugin marks it as risky or tells OpenClaw to remove it.
 

@@ -126,6 +126,42 @@ type MarketabilityAudit = {
   nextAction: string;
 };
 
+type ProductAudit = {
+  productName: string;
+  websiteUrl: string;
+  auditMode: "creative-audit";
+  overallReadiness: "blocked" | "needs-work" | "promising" | "ready-to-promote";
+  score: number;
+  productUnderstanding: {
+    summary: string;
+    audience: string[];
+    primaryUseCases: string[];
+    positioning: string[];
+  };
+  screenDiagnosis: {
+    strongestScreens: string[];
+    weakOrBrokenScreens: string[];
+    missingScreens: string[];
+    screenshotRecommendations: string[];
+  };
+  marketingDiagnosis: {
+    strongestSellingPoints: string[];
+    recommendedPromoAngle: string;
+    supportedClaims: string[];
+    riskyClaims: string[];
+    missingTrustSignals: string[];
+  };
+  fixBeforePromotion: string[];
+  recommendedAssets: Array<{
+    asset: string;
+    sourceScreens: string[];
+    purpose: string;
+    readiness: "ready" | "needs-fix" | "needs-evidence";
+  }>;
+  lovableFixPrompts: string[];
+  nextWorkflow: string[];
+};
+
 type CaptureItem = {
   ref: string;
   url: string;
@@ -857,6 +893,177 @@ function makeMarketabilityAudit(params: {
         : readiness === "marketable"
           ? "Create launch assets, but fix listed weak spots before public launch."
           : "Improve evidence and screens before generating final promotional assets.",
+  };
+}
+
+function makeProductAudit(params: {
+  intelligence: SiteIntelligence;
+  marketabilityAudit?: MarketabilityAudit;
+  scanSummary?: ScanSessionSummary;
+  captures?: CaptureItem[];
+  visualIssues?: VisualIssueReport["issues"];
+  userGoal?: string;
+  isLovableApp?: boolean;
+  missingTrustSignals?: string[];
+  missingScreens?: string[];
+  approvedScreens?: string[];
+  targetLaunchChannel?: string;
+}): ProductAudit {
+  const intelligence = params.intelligence;
+  const marketability = params.marketabilityAudit;
+  const captures = params.captures ?? [];
+  const approvedScreens = asList(params.approvedScreens, [
+    ...captures
+      .filter((capture) => ["excellent", "good", "usable"].includes(capture.quality ?? "usable"))
+      .map((capture) => capture.ref),
+    ...(marketability?.strongestScreens ?? []),
+  ]).filter(Boolean);
+  const visualIssues = params.visualIssues ?? [];
+  const weakFromCaptures = captures
+    .filter((capture) =>
+      ["weak", "broken"].includes(capture.quality ?? "usable") ||
+      asList(capture.issues, []).length > 0,
+    )
+    .map((capture) => `${capture.ref} (${capture.url})`);
+  const weakScreens = [
+    ...asList(marketability?.weakScreens, []),
+    ...weakFromCaptures,
+    ...visualIssues.map((issue) => `${issue.screenRef}: ${issue.problem}`),
+  ];
+  const missingScreens = asList(params.missingScreens, [
+    ...(params.scanSummary?.routeCoverage === "low" ? ["Core product route coverage is still low."] : []),
+    ...(approvedScreens.some((screen) => screen.toLowerCase().includes("mobile"))
+      ? []
+      : ["Mobile screenshot for the primary conversion path."]),
+    "Clean primary workflow from entry point to success state.",
+    "Trust/proof screen with visible evidence, testimonial, integration, pricing, or guarantees.",
+  ]);
+  const missingTrustSignals = asList(params.missingTrustSignals, [
+    ...(intelligence.proofGaps.length > 0 ? intelligence.proofGaps : []),
+    "Visible proof that supports the strongest promotional claim.",
+    "Clear privacy, support, pricing, or contact signal where relevant.",
+  ]);
+  const riskyClaims = asList(marketability?.riskyClaims, intelligence.doNotClaim);
+  const supportedClaims = asList(marketability?.supportedClaims, intelligence.visibleFeatures.slice(0, 5));
+  const baseScore =
+    marketability?.score ??
+    clampScore(
+      40 +
+        Math.min(20, approvedScreens.length * 4) +
+        Math.min(15, intelligence.visibleFeatures.length * 2) -
+        Math.min(25, weakScreens.length * 5) -
+        Math.min(20, missingScreens.length * 4),
+    );
+  const score = clampScore(
+    baseScore +
+      (params.scanSummary?.routeCoverage === "high" ? 8 : params.scanSummary?.routeCoverage === "medium" ? 4 : 0) -
+      Math.min(15, missingTrustSignals.length * 2) -
+      Math.min(10, riskyClaims.length * 2),
+  );
+  const overallReadiness: ProductAudit["overallReadiness"] =
+    score >= 85
+      ? "ready-to-promote"
+      : score >= 70
+        ? "promising"
+        : score >= 45
+          ? "needs-work"
+          : "blocked";
+  const strongestScreens =
+    approvedScreens.length > 0
+      ? approvedScreens.slice(0, 6)
+      : ["No approved screen is strong enough yet. Capture the product entry, main workflow, proof screen, and mobile path."];
+  const recommendedPromoAngle =
+    intelligence.launchAngles[0] ??
+    `Show how ${intelligence.productName} helps ${intelligence.audience[0] ?? "its target users"} complete the main workflow with less friction.`;
+
+  return {
+    productName: intelligence.productName,
+    websiteUrl: intelligence.websiteUrl,
+    auditMode: "creative-audit",
+    overallReadiness,
+    score,
+    productUnderstanding: {
+      summary: intelligence.productSummary,
+      audience: intelligence.audience,
+      primaryUseCases: intelligence.userFlows,
+      positioning: intelligence.positioning,
+    },
+    screenDiagnosis: {
+      strongestScreens,
+      weakOrBrokenScreens: weakScreens,
+      missingScreens,
+      screenshotRecommendations: [
+        "Use real app screens before abstract promotional imagery.",
+        "Capture desktop and mobile versions of the main conversion path.",
+        "Prefer screens that show the product doing useful work, not generic landing-page claims.",
+        "Exclude screens with console errors, placeholder content, private data, clipped text, or unclear CTAs.",
+      ],
+    },
+    marketingDiagnosis: {
+      strongestSellingPoints: intelligence.visibleFeatures.slice(0, 6),
+      recommendedPromoAngle,
+      supportedClaims,
+      riskyClaims,
+      missingTrustSignals,
+    },
+    fixBeforePromotion: [
+      ...(weakScreens.length > 0 ? ["Fix or remove weak, broken, placeholder-heavy, or confusing screens."] : []),
+      ...(missingTrustSignals.length > 0 ? ["Add or confirm trust signals before using strong marketing claims."] : []),
+      ...(missingScreens.length > 0 ? ["Capture missing screens before generating final assets."] : []),
+      ...(riskyClaims.length > 0 ? ["Rewrite risky claims into evidence-backed language."] : []),
+      "Run a final screenshot and claim review before publishing generated assets.",
+    ],
+    recommendedAssets: [
+      {
+        asset: `${params.targetLaunchChannel ?? "Launch"} hero image`,
+        sourceScreens: strongestScreens.slice(0, 2),
+        purpose: "Make the product understandable in one glance.",
+        readiness: weakScreens.length === 0 && strongestScreens.length > 0 ? "ready" : "needs-fix",
+      },
+      {
+        asset: "Feature carousel",
+        sourceScreens: strongestScreens.slice(0, 5),
+        purpose: "Show the product journey across multiple screens.",
+        readiness: strongestScreens.length >= 3 ? "ready" : "needs-evidence",
+      },
+      {
+        asset: "30-second demo storyboard",
+        sourceScreens: strongestScreens.slice(0, 4),
+        purpose: "Turn the best route through the app into a short launch video.",
+        readiness: params.scanSummary?.routeCoverage === "high" ? "ready" : "needs-evidence",
+      },
+      {
+        asset: "Social launch copy",
+        sourceScreens: strongestScreens.slice(0, 1),
+        purpose: "Create proof-backed copy for LinkedIn, X/Twitter, and founder launch channels.",
+        readiness: supportedClaims.length > 0 && riskyClaims.length === 0 ? "ready" : "needs-evidence",
+      },
+    ],
+    lovableFixPrompts: params.isLovableApp
+      ? [
+          `Improve ${intelligence.productName} for launch marketing: fix weak screens, clarify the primary CTA, remove placeholder content, and ensure the main workflow is visually polished on desktop and mobile.`,
+          `Create screenshot-ready demo data for ${intelligence.productName}. Avoid private data. Make the main workflow, success state, and proof/trust screen visually clear.`,
+          `Refactor confusing UI sections in ${intelligence.productName} so the value proposition, feature proof, and next action are visible without relying on marketing text alone.`,
+        ]
+      : [],
+    nextWorkflow:
+      overallReadiness === "ready-to-promote"
+        ? [
+            "Run `creative_launch_asset_matrix`.",
+            "Run `creative_image_prompt_pack` or `creative_video_storyboard`.",
+            "Run `creative_asset_review` before publishing.",
+          ]
+        : params.isLovableApp
+          ? [
+              "Use the Lovable fix prompts to improve weak screens.",
+              "Rescan the app after fixes.",
+              "Run `creative_product_audit` again before generating public assets.",
+            ]
+          : [
+              "Fix the listed product, trust, or screen issues.",
+              "Capture missing evidence.",
+              "Run `creative_product_audit` again before generating public assets.",
+            ],
   };
 }
 
@@ -2255,6 +2462,50 @@ export default definePluginEntry({
       }),
       async execute(_id, params: any) {
         return jsonText(makeMarketabilityAudit(params));
+      },
+    });
+
+    api.registerTool({
+      name: "creative_product_audit",
+      label: "Run Creative Audit Mode",
+      description:
+        "Inspect a scanned app like a product marketer, designer, and QA reviewer before generating promotional images, video storyboards, or launch copy.",
+      parameters: Type.Object({
+        intelligence: Type.Any(),
+        marketabilityAudit: Type.Optional(Type.Any()),
+        scanSummary: Type.Optional(Type.Any()),
+        captures: Type.Optional(Type.Array(Type.Object({
+          ref: Type.String(),
+          url: Type.String(),
+          viewport: Type.Optional(Type.String()),
+          purpose: Type.Optional(Type.String()),
+          quality: Type.Optional(Type.Union([
+            Type.Literal("excellent"),
+            Type.Literal("good"),
+            Type.Literal("usable"),
+            Type.Literal("weak"),
+            Type.Literal("broken"),
+          ])),
+          visibleClaims: optionalStringArray("Claims visible in this capture."),
+          issues: optionalStringArray("Problems visible in this capture."),
+          notes: Type.Optional(Type.String()),
+        }))),
+        visualIssues: Type.Optional(Type.Array(Type.Object({
+          screenRef: Type.String(),
+          category: Type.String(),
+          problem: Type.String(),
+          impact: Type.String(),
+          recommendedFix: Type.String(),
+        }))),
+        userGoal: Type.Optional(Type.String()),
+        isLovableApp: Type.Optional(Type.Boolean()),
+        missingTrustSignals: optionalStringArray("Missing proof, privacy, pricing, support, contact, compliance, or credibility signals."),
+        missingScreens: optionalStringArray("Screens still needed before marketing assets."),
+        approvedScreens: optionalStringArray("Screen or capture references approved for marketing use."),
+        targetLaunchChannel: Type.Optional(Type.String()),
+      }),
+      async execute(_id, params: any) {
+        return jsonText(makeProductAudit(params));
       },
     });
 

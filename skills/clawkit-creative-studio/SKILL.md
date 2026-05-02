@@ -31,16 +31,17 @@ Never invent product claims. If a claim is not visible in the captured website/a
 8. Run `creative_scan_session_summary`.
 9. Run `creative_site_intelligence` with page observations and screenshot references.
 10. Run `creative_marketability_audit` to decide whether the product is ready for promotion.
-11. Run `creative_evidence_map` before using strong promotional claims.
-12. Run `creative_capture_checklist` if more shots are needed.
-13. Run `creative_capture_report` after screenshots are captured.
-14. Run `creative_shot_selection` to choose the best shot for each launch asset.
-15. Run `creative_visual_issue_report` when screenshots reveal visual, mobile, copy, or runtime problems.
-16. Run `creative_launch_asset_matrix` to map assets to exact shots and supported claims.
-17. Run `creative_launch_pack`, `creative_image_prompt_pack`, or `creative_video_storyboard`.
-18. Run `creative_export_plan` when the user needs a reusable launch package.
-19. Run `creative_launch_brief`, `creative_prompt_export`, `creative_social_copy_pack`, or `creative_client_handoff` as needed.
-20. Run `creative_asset_review` before publishing or delivering assets.
+11. Run `creative_product_audit` before generating final assets.
+12. Run `creative_evidence_map` before using strong promotional claims.
+13. Run `creative_capture_checklist` if more shots are needed.
+14. Run `creative_capture_report` after screenshots are captured.
+15. Run `creative_shot_selection` to choose the best shot for each launch asset.
+16. Run `creative_visual_issue_report` when screenshots reveal visual, mobile, copy, or runtime problems.
+17. Run `creative_launch_asset_matrix` to map assets to exact shots and supported claims.
+18. Run `creative_launch_pack`, `creative_image_prompt_pack`, or `creative_video_storyboard`.
+19. Run `creative_export_plan` when the user needs a reusable launch package.
+20. Run `creative_launch_brief`, `creative_prompt_export`, `creative_social_copy_pack`, or `creative_client_handoff` as needed.
+21. Run `creative_asset_review` before publishing or delivering assets.
 
 ## Whole-Site Understanding
 
@@ -88,6 +89,23 @@ It should answer:
 - What evidence is still missing?
 
 Then use `creative_evidence_map` to connect every claim to visible evidence or explicit user confirmation. If a claim is unsupported, remove it or rewrite it conservatively.
+
+## Creative Audit Mode
+
+Use `creative_product_audit` after site intelligence and before final asset generation.
+
+It should act like a product marketer, designer, and QA reviewer in one pass:
+
+- Explain what the app does and who it is for.
+- Identify the strongest selling points.
+- Identify weak, broken, confusing, or unfinished screens.
+- List missing trust signals and evidence.
+- Recommend the best promo angle.
+- Choose which screenshots should anchor marketing assets.
+- Create Lovable fix prompts when the scanned product is a Lovable app.
+- Tell OpenClaw whether to generate assets now, capture more evidence, or fix the app first.
+
+This is the main confidence layer. It should stop OpenClaw from making beautiful but misleading assets when the product is not ready.
 
 ## Capture Pack
 

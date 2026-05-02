@@ -76,6 +76,23 @@ Output: marketability audit with:
 
 Use it before generating final promotional assets.
 
+## `creative_product_audit`
+
+Input: site intelligence brief, optional marketability audit, optional scan summary, captures, visual issues, user goal, Lovable-app flag, missing trust signals, missing screens, approved screens, and target launch channel.
+
+Output: full Creative Audit Mode report with:
+
+- Overall readiness state and score.
+- Product understanding summary, audience, use cases, and positioning.
+- Strongest screens, weak or broken screens, missing screens, and screenshot recommendations.
+- Strongest selling points, recommended promo angle, supported claims, risky claims, and missing trust signals.
+- Fix-before-promotion actions.
+- Recommended assets with source screens and readiness state.
+- Lovable fix prompts when relevant.
+- Next workflow.
+
+Use it after `creative_site_intelligence` and before final asset generation. This is the product-level confidence check that decides whether OpenClaw should create assets now, capture more evidence, or improve the app first.
+
 ## `creative_evidence_map`
 
 Input: marketing claims, visible evidence, user-confirmed claims, and do-not-claim rules.
