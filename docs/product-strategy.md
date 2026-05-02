@@ -20,6 +20,7 @@ Core phrase:
 - **Launch**: create Product Hunt, social, and website promotional assets.
 - **Storyboard**: create short promo video plans from actual screens.
 - **Review**: check claims, privacy, and marketability.
+- **Export**: turn the work into handoff-ready launch files.
 - **Lovable Launch**: turn Lovable apps into launch-ready creative packs.
 
 ## Ideal Customer
@@ -95,3 +96,13 @@ Capture Pack v1 turns browsing evidence into a launch production workflow:
 - `creative_shot_selection`: best-shot selection for each target asset.
 - `creative_visual_issue_report`: launch-blocking visual issue report.
 - `creative_launch_asset_matrix`: asset-to-shot-to-claim production matrix.
+
+## Version 0.1.3 Upgrade
+
+Export Pack v1 turns the workflow into a concrete deliverable:
+
+- `creative_export_plan`: plans the launch-pack files.
+- `creative_launch_brief`: produces the main markdown launch brief.
+- `creative_prompt_export`: packages image and video prompts.
+- `creative_social_copy_pack`: creates platform-specific copy.
+- `creative_client_handoff`: creates an agency/client-ready handoff.

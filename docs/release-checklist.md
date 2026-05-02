@@ -33,9 +33,9 @@ clawhub package publish MarcSean1971/clawkit-creative-studio@main \
   --family code-plugin \
   --name @clawkit/clawkit-creative-studio \
   --display-name "ClawKit Creative Studio" \
-  --version 0.1.2 \
+  --version 0.1.3 \
   --source-repo MarcSean1971/clawkit-creative-studio \
   --source-commit "$(git rev-parse HEAD)" \
   --source-ref main \
-  --changelog "Add Capture Pack screenshot inventory and asset matrix"
+  --changelog "Add Export Pack launch handoff tools"
 ```

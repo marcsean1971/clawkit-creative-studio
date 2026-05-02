@@ -36,7 +36,9 @@ Never invent product claims. If a claim is not visible in the captured website/a
 13. Run `creative_visual_issue_report` when screenshots reveal visual, mobile, copy, or runtime problems.
 14. Run `creative_launch_asset_matrix` to map assets to exact shots and supported claims.
 15. Run `creative_launch_pack`, `creative_image_prompt_pack`, or `creative_video_storyboard`.
-16. Run `creative_asset_review` before publishing or delivering assets.
+16. Run `creative_export_plan` when the user needs a reusable launch package.
+17. Run `creative_launch_brief`, `creative_prompt_export`, `creative_social_copy_pack`, or `creative_client_handoff` as needed.
+18. Run `creative_asset_review` before publishing or delivering assets.
 
 ## Whole-Site Understanding
 
@@ -84,6 +86,20 @@ The normal order is:
 4. `creative_launch_asset_matrix`: connect each asset to a screenshot, supported claim, copy angle, and approval gate.
 
 This is what turns a full-site scan into a repeatable launch production workflow.
+
+## Export Pack
+
+Use Export Pack when the user wants a concrete handoff for themselves, a designer, a video editor, or a client.
+
+The normal order is:
+
+1. `creative_export_plan`: decide which files belong in the handoff.
+2. `creative_launch_brief`: create the main launch strategy document.
+3. `creative_prompt_export`: package image prompts and video storyboard prompts.
+4. `creative_social_copy_pack`: prepare platform-specific launch copy.
+5. `creative_client_handoff`: summarize scan evidence, assets, approvals, and fixes.
+
+The plugin should not write files directly. Return markdown and structured output, then let OpenClaw write files only with user approval.
 
 ## Lovable Launch Pack
 

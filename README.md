@@ -47,6 +47,11 @@ The result is a launch pack based on what the product actually shows, not generi
 | `creative_launch_pack` | Produces launch copy, asset concepts, and review checklist. |
 | `creative_image_prompt_pack` | Creates image-generation prompts for promotional assets. |
 | `creative_video_storyboard` | Creates 15- or 30-second promo video storyboards. |
+| `creative_export_plan` | Plans the files that should make up a launch handoff pack. |
+| `creative_launch_brief` | Creates a markdown launch brief from intelligence, audit, evidence, and asset matrix. |
+| `creative_prompt_export` | Formats image prompts and video storyboard scenes into a handoff document. |
+| `creative_social_copy_pack` | Creates LinkedIn, X/Twitter, Product Hunt, Indie Hackers, email, and banner copy. |
+| `creative_client_handoff` | Creates an agency/client-ready summary with approvals and fixes. |
 | `creative_lovable_launch_pack` | Turns a Lovable app URL into a launch-ready marketing workflow. |
 | `creative_asset_review` | Checks claims, evidence, privacy, and visual readiness before publishing. |
 
@@ -65,7 +70,9 @@ The result is a launch pack based on what the product actually shows, not generi
 11. Run `creative_visual_issue_report` if screenshots reveal broken UI, poor mobile layout, weak copy, or runtime issues.
 12. Run `creative_launch_asset_matrix` to map assets to screenshots and supported claims.
 13. Run `creative_launch_pack`, `creative_image_prompt_pack`, or `creative_video_storyboard`.
-14. Run `creative_asset_review` before publishing or sending assets to a client.
+14. Run `creative_export_plan` when the user wants a reusable handoff package.
+15. Run `creative_launch_brief`, `creative_prompt_export`, `creative_social_copy_pack`, and `creative_client_handoff` as needed.
+16. Run `creative_asset_review` before publishing or sending assets to a client.
 
 ## Trust Layer
 
@@ -86,6 +93,14 @@ Capture Pack v1 turns raw browsing evidence into a production workflow.
 `creative_visual_issue_report` flags visual, copy, mobile, layout, and runtime problems before they become embarrassing launch assets.
 
 `creative_launch_asset_matrix` maps every target asset to the screenshot, supported claim, copy angle, format, and human approval gate.
+
+## Export Pack
+
+Export Pack v1 turns Creative Studio output into handoff-ready content.
+
+`creative_export_plan` recommends the files that should be created for a launch pack, such as `launch-brief.md`, `asset-matrix.json`, `image-prompts.md`, `video-storyboard.md`, `social-copy.md`, and `client-handoff.md`.
+
+The plugin does not write files itself. It returns structured markdown, JSON-style data, and CSV-ready planning so OpenClaw can write files only when the user approves.
 
 ## Lovable Extension
 

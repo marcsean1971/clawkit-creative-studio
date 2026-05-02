@@ -131,6 +131,36 @@ Input: site intelligence brief, duration, orientation, approved screenshot/clip 
 
 Output: video storyboard with timing, scene titles, direction, on-screen text, voiceover notes, and production notes.
 
+## `creative_export_plan`
+
+Input: product name, package name, and whether to include video, client handoff, and CSV shot list.
+
+Output: recommended launch-pack file list, creation order, and approval gates.
+
+## `creative_launch_brief`
+
+Input: site intelligence, optional marketability audit, evidence map, asset matrix, and launch goal.
+
+Output: markdown launch brief with product summary, audience, positioning, marketability, supported claims, risky claims, asset matrix, and fixes.
+
+## `creative_prompt_export`
+
+Input: image prompt pack and optional video storyboard.
+
+Output: markdown document containing image prompts, negative prompts, storyboard prompts, and production notes.
+
+## `creative_social_copy_pack`
+
+Input: product name, website URL, tagline, supported claims, audience, and tone.
+
+Output: markdown copy pack for LinkedIn, X/Twitter, Product Hunt, Indie Hackers, email announcement, and website banner.
+
+## `creative_client_handoff`
+
+Input: product name, website URL, scan summary, capture report, marketability audit, asset matrix, and pending approvals.
+
+Output: agency/client-ready markdown handoff with scan summary, capture status, marketability status, recommended assets, pending approvals, and fixes before launch.
+
 ## `creative_lovable_launch_pack`
 
 Input: Lovable preview/deployed URL, product name, optional GitHub repo URL, target audience, and launch goal.

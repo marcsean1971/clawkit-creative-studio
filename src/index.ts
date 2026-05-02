@@ -140,6 +140,19 @@ type VisualIssueReport = {
   recaptureAfterFix: string[];
 };
 
+type ExportPlan = {
+  productName: string;
+  packageName: string;
+  recommendedFiles: Array<{
+    path: string;
+    purpose: string;
+    sourceTools: string[];
+    format: "markdown" | "json" | "csv";
+  }>;
+  creationOrder: string[];
+  approvalGates: string[];
+};
+
 const text = (value: string) => ({
   content: [{ type: "text" as const, text: value }],
   details: {},
@@ -782,6 +795,278 @@ function makeLaunchAssetMatrix(params: {
   };
 }
 
+function makeExportPlan(params: {
+  productName?: string;
+  packageName?: string;
+  includeVideo?: boolean;
+  includeClientHandoff?: boolean;
+  includeCsv?: boolean;
+}): ExportPlan {
+  const packageName = params.packageName ?? "launch-pack";
+  const files: ExportPlan["recommendedFiles"] = [
+    {
+      path: `${packageName}/launch-brief.md`,
+      purpose: "Human-readable launch strategy and product summary.",
+      sourceTools: ["creative_site_intelligence", "creative_marketability_audit", "creative_launch_brief"],
+      format: "markdown",
+    },
+    {
+      path: `${packageName}/asset-matrix.json`,
+      purpose: "Structured asset-to-shot-to-claim production map.",
+      sourceTools: ["creative_launch_asset_matrix"],
+      format: "json",
+    },
+    {
+      path: `${packageName}/image-prompts.md`,
+      purpose: "Image prompt handoff for designers or image-generation tools.",
+      sourceTools: ["creative_image_prompt_pack", "creative_prompt_export"],
+      format: "markdown",
+    },
+    {
+      path: `${packageName}/social-copy.md`,
+      purpose: "Platform-specific launch copy.",
+      sourceTools: ["creative_social_copy_pack"],
+      format: "markdown",
+    },
+    {
+      path: `${packageName}/review-checklist.md`,
+      purpose: "Final evidence, privacy, brand, and approval checklist.",
+      sourceTools: ["creative_asset_review", "creative_client_handoff"],
+      format: "markdown",
+    },
+  ];
+  if (params.includeVideo) {
+    files.push({
+      path: `${packageName}/video-storyboard.md`,
+      purpose: "Scene-by-scene video storyboard and production notes.",
+      sourceTools: ["creative_video_storyboard", "creative_prompt_export"],
+      format: "markdown",
+    });
+  }
+  if (params.includeClientHandoff) {
+    files.push({
+      path: `${packageName}/client-handoff.md`,
+      purpose: "Agency/client-ready summary of scan, assets, claims, approvals, and fixes.",
+      sourceTools: ["creative_client_handoff"],
+      format: "markdown",
+    });
+  }
+  if (params.includeCsv) {
+    files.push({
+      path: `${packageName}/shot-list.csv`,
+      purpose: "Spreadsheet-friendly shot list for production tracking.",
+      sourceTools: ["creative_capture_report", "creative_shot_selection"],
+      format: "csv",
+    });
+  }
+
+  return {
+    productName: params.productName ?? "Website product",
+    packageName,
+    recommendedFiles: files,
+    creationOrder: [
+      "Confirm scan evidence and approvals.",
+      "Create launch brief.",
+      "Export asset matrix.",
+      "Export image/video prompts.",
+      "Export social copy.",
+      "Export client handoff if needed.",
+      "Run final human review before publishing.",
+    ],
+    approvalGates: [
+      "User approves use of screenshots and video clips.",
+      "Claims are evidence-backed or user-confirmed.",
+      "No private data is present.",
+      "Brand/legal/platform review completed before public use.",
+    ],
+  };
+}
+
+function makeLaunchBrief(params: {
+  intelligence: SiteIntelligence;
+  audit?: MarketabilityAudit;
+  evidenceMap?: { items?: EvidenceMapItem[]; summary?: string };
+  assetMatrix?: { matrix?: Array<Record<string, unknown>> };
+  launchGoal?: string;
+}) {
+  const intelligence = params.intelligence;
+  const supportedClaims = params.evidenceMap?.items
+    ?.filter((item) => item.status === "supported")
+    .map((item) => item.claim) ?? [];
+  const riskyClaims = params.evidenceMap?.items
+    ?.filter((item) => item.status !== "supported")
+    .map((item) => `${item.claim} (${item.status})`) ?? [];
+  const matrixRows = params.assetMatrix?.matrix
+    ?.map((item) => `- ${String(item.asset ?? "Asset")}: ${String(item.screenshotRef ?? "missing-shot")} - ${String(item.claim ?? "claim pending")}`)
+    .join("\n") ?? "- Asset matrix not supplied.";
+
+  const markdown = [
+    `# ${intelligence.productName} Launch Brief`,
+    "",
+    `Website: ${intelligence.websiteUrl}`,
+    `Launch goal: ${params.launchGoal ?? "Create evidence-based launch assets from the real product."}`,
+    "",
+    "## Product Summary",
+    intelligence.productSummary,
+    "",
+    "## Audience",
+    ...intelligence.audience.map((item) => `- ${item}`),
+    "",
+    "## Positioning",
+    ...intelligence.positioning.map((item) => `- ${item}`),
+    "",
+    "## Marketability",
+    `Readiness: ${params.audit?.readiness ?? "not audited"}`,
+    `Score: ${params.audit?.score ?? "not scored"}`,
+    `Next action: ${params.audit?.nextAction ?? intelligence.recommendedNextAction}`,
+    "",
+    "## Supported Claims",
+    ...(supportedClaims.length > 0 ? supportedClaims.map((claim) => `- ${claim}`) : ["- No supported claims supplied yet."]),
+    "",
+    "## Risky Or Unverified Claims",
+    ...(riskyClaims.length > 0 ? riskyClaims.map((claim) => `- ${claim}`) : ["- None supplied."]),
+    "",
+    "## Asset Matrix",
+    matrixRows,
+    "",
+    "## Fix Before Launch",
+    ...(params.audit?.recommendedFixes ?? ["Run marketability audit and asset review before public launch."]).map((fix) => `- ${fix}`),
+  ].join("\n");
+
+  return {
+    productName: intelligence.productName,
+    fileName: "launch-brief.md",
+    markdown,
+  };
+}
+
+function makePromptExport(params: {
+  productName?: string;
+  imagePromptPack?: { prompts?: Array<{ format?: string; prompt?: string; negativePrompt?: string }> };
+  videoStoryboard?: { storyboard?: Array<Record<string, unknown>>; productionNotes?: string[] };
+}) {
+  const imagePrompts = params.imagePromptPack?.prompts ?? [];
+  const videoScenes = params.videoStoryboard?.storyboard ?? [];
+  const markdown = [
+    `# ${params.productName ?? "Product"} Prompt Export`,
+    "",
+    "## Image Prompts",
+    ...(imagePrompts.length > 0
+      ? imagePrompts.flatMap((item, index) => [
+          `### ${index + 1}. ${item.format ?? "Image"}`,
+          item.prompt ?? "Prompt missing.",
+          "",
+          `Negative prompt: ${item.negativePrompt ?? "None supplied."}`,
+          "",
+        ])
+      : ["No image prompts supplied.", ""]),
+    "## Video Storyboard Prompts",
+    ...(videoScenes.length > 0
+      ? videoScenes.map((scene, index) =>
+          `${index + 1}. ${String(scene.time ?? "")} ${String(scene.title ?? "Scene")}: ${String(scene.direction ?? "")}`,
+        )
+      : ["No video storyboard supplied."]),
+    "",
+    "## Production Notes",
+    ...(params.videoStoryboard?.productionNotes ?? ["Human review required before generation or publication."]).map((note) => `- ${note}`),
+  ].join("\n");
+
+  return {
+    productName: params.productName ?? "Product",
+    fileName: "image-and-video-prompts.md",
+    markdown,
+  };
+}
+
+function makeSocialCopyPack(params: {
+  productName: string;
+  websiteUrl?: string;
+  tagline?: string;
+  supportedClaims?: string[];
+  audience?: string;
+  tone?: string;
+}) {
+  const claims = asList(params.supportedClaims, ["a real product workflow visible in the captured app screens"]);
+  const tagline = params.tagline ?? `${params.productName} turns a real product journey into a clear launch.`;
+  const url = params.websiteUrl ?? "Add launch URL";
+  return {
+    productName: params.productName,
+    markdown: [
+      `# ${params.productName} Social Copy`,
+      "",
+      "## LinkedIn",
+      `${tagline}\n\nWe are launching ${params.productName} for ${params.audience ?? "teams that need a clearer product workflow"}.\n\nWhat stood out in the product:\n${claims.map((claim) => `- ${claim}`).join("\n")}\n\n${url}`,
+      "",
+      "## X / Twitter",
+      `Launching ${params.productName}: ${claims[0]}.\n\n${url}`,
+      "",
+      "## Product Hunt",
+      `${params.productName} helps ${params.audience ?? "users"} with ${claims[0]}. Built from real product screens and ready for human review before launch.`,
+      "",
+      "## Indie Hackers",
+      `I am launching ${params.productName}. The current launch angle is simple: ${claims[0]}.\n\nI would love feedback on the product flow and positioning.\n\n${url}`,
+      "",
+      "## Email Announcement",
+      `Subject: Introducing ${params.productName}\n\nHi,\n\n${tagline}\n\nThe product focuses on ${claims.slice(0, 3).join(", ")}.\n\nTake a look here: ${url}\n\nThanks`,
+      "",
+      "## Website Banner",
+      `${tagline}`,
+    ].join("\n"),
+    platforms: ["LinkedIn", "X/Twitter", "Product Hunt", "Indie Hackers", "Email", "Website banner"],
+  };
+}
+
+function makeClientHandoff(params: {
+  productName: string;
+  websiteUrl?: string;
+  scanSummary?: string;
+  captureReport?: CaptureReport;
+  audit?: MarketabilityAudit;
+  assetMatrix?: { matrix?: Array<Record<string, unknown>> };
+  pendingApprovals?: string[];
+}) {
+  const pendingApprovals = asList(params.pendingApprovals, [
+    "Approve screenshots and video clips for external use.",
+    "Approve all public claims.",
+    "Confirm no private data is visible.",
+  ]);
+  const assets = params.assetMatrix?.matrix
+    ?.map((item) => `- ${String(item.asset ?? "Asset")}: ${String(item.productionStatus ?? "status unknown")}`)
+    ?? ["- Asset matrix not supplied."];
+
+  return {
+    productName: params.productName,
+    fileName: "client-handoff.md",
+    markdown: [
+      `# ${params.productName} Creative Handoff`,
+      "",
+      `Website: ${params.websiteUrl ?? "not supplied"}`,
+      "",
+      "## Scan Summary",
+      params.scanSummary ?? "Full-site scan summary not supplied.",
+      "",
+      "## Capture Summary",
+      `Total captures: ${params.captureReport?.totalCaptures ?? "not supplied"}`,
+      `Approved captures: ${params.captureReport?.approvedCaptures.length ?? "not supplied"}`,
+      `Weak captures: ${params.captureReport?.weakCaptures.length ?? "not supplied"}`,
+      "",
+      "## Marketability",
+      `Readiness: ${params.audit?.readiness ?? "not audited"}`,
+      `Score: ${params.audit?.score ?? "not scored"}`,
+      `Next action: ${params.audit?.nextAction ?? "Run marketability audit before public launch."}`,
+      "",
+      "## Recommended Assets",
+      ...assets,
+      "",
+      "## Pending Approvals",
+      ...pendingApprovals.map((item) => `- ${item}`),
+      "",
+      "## Fix Before Launch",
+      ...(params.audit?.recommendedFixes ?? ["Complete final human review."]).map((item) => `- ${item}`),
+    ].join("\n"),
+  };
+}
+
 function makeLaunchPack(params: {
   intelligence: SiteIntelligence;
   launchGoal?: string;
@@ -1270,6 +1555,92 @@ export default definePluginEntry({
       }),
       async execute(_id, params: any) {
         return jsonText(makeVideoStoryboard(params));
+      },
+    });
+
+    api.registerTool({
+      name: "creative_export_plan",
+      label: "Plan Export Pack",
+      description:
+        "Decide which markdown, JSON, and CSV handoff files should be created for a launch pack.",
+      parameters: Type.Object({
+        productName: Type.Optional(Type.String()),
+        packageName: Type.Optional(Type.String()),
+        includeVideo: Type.Optional(Type.Boolean()),
+        includeClientHandoff: Type.Optional(Type.Boolean()),
+        includeCsv: Type.Optional(Type.Boolean()),
+      }),
+      async execute(_id, params: any) {
+        return jsonText(makeExportPlan(params));
+      },
+    });
+
+    api.registerTool({
+      name: "creative_launch_brief",
+      label: "Create Launch Brief",
+      description:
+        "Create a markdown launch brief from site intelligence, marketability audit, evidence map, and asset matrix.",
+      parameters: Type.Object({
+        intelligence: Type.Any(),
+        audit: Type.Optional(Type.Any()),
+        evidenceMap: Type.Optional(Type.Any()),
+        assetMatrix: Type.Optional(Type.Any()),
+        launchGoal: Type.Optional(Type.String()),
+      }),
+      async execute(_id, params: any) {
+        return jsonText(makeLaunchBrief(params));
+      },
+    });
+
+    api.registerTool({
+      name: "creative_prompt_export",
+      label: "Export Prompts",
+      description:
+        "Format image prompts and video storyboard scenes into a handoff-ready markdown document.",
+      parameters: Type.Object({
+        productName: Type.Optional(Type.String()),
+        imagePromptPack: Type.Optional(Type.Any()),
+        videoStoryboard: Type.Optional(Type.Any()),
+      }),
+      async execute(_id, params: any) {
+        return jsonText(makePromptExport(params));
+      },
+    });
+
+    api.registerTool({
+      name: "creative_social_copy_pack",
+      label: "Create Social Copy Pack",
+      description:
+        "Create platform-specific launch copy for LinkedIn, X/Twitter, Product Hunt, Indie Hackers, email, and website banners.",
+      parameters: Type.Object({
+        productName: Type.String(),
+        websiteUrl: Type.Optional(Type.String()),
+        tagline: Type.Optional(Type.String()),
+        supportedClaims: optionalStringArray("Evidence-backed claims to use in copy."),
+        audience: Type.Optional(Type.String()),
+        tone: Type.Optional(Type.String()),
+      }),
+      async execute(_id, params: any) {
+        return jsonText(makeSocialCopyPack(params));
+      },
+    });
+
+    api.registerTool({
+      name: "creative_client_handoff",
+      label: "Create Client Handoff",
+      description:
+        "Create an agency/client-ready markdown handoff with scan summary, capture status, marketability, assets, approvals, and fixes.",
+      parameters: Type.Object({
+        productName: Type.String(),
+        websiteUrl: Type.Optional(Type.String()),
+        scanSummary: Type.Optional(Type.String()),
+        captureReport: Type.Optional(Type.Any()),
+        audit: Type.Optional(Type.Any()),
+        assetMatrix: Type.Optional(Type.Any()),
+        pendingApprovals: optionalStringArray("Approvals still required before launch."),
+      }),
+      async execute(_id, params: any) {
+        return jsonText(makeClientHandoff(params));
       },
     });
 
