@@ -90,6 +90,56 @@ type MarketabilityAudit = {
   nextAction: string;
 };
 
+type CaptureItem = {
+  ref: string;
+  url: string;
+  viewport?: string;
+  purpose?: string;
+  quality?: "excellent" | "good" | "usable" | "weak" | "broken";
+  visibleClaims?: string[];
+  issues?: string[];
+  notes?: string;
+};
+
+type CaptureReport = {
+  productName: string;
+  websiteUrl: string;
+  totalCaptures: number;
+  approvedCaptures: CaptureItem[];
+  weakCaptures: CaptureItem[];
+  coverage: string[];
+  missingShots: string[];
+  recommendedRecaptures: string[];
+  nextAction: string;
+};
+
+type ShotSelection = {
+  productName: string;
+  selections: Array<{
+    asset: string;
+    primaryShot: string;
+    backupShot: string | null;
+    reason: string;
+    copyAngle: string;
+    requiredFixes: string[];
+  }>;
+  rejectedShots: Array<{ ref: string; reason: string }>;
+};
+
+type VisualIssueReport = {
+  productName: string;
+  severity: "low" | "medium" | "high";
+  issues: Array<{
+    screenRef: string;
+    category: string;
+    problem: string;
+    impact: string;
+    recommendedFix: string;
+  }>;
+  launchBlockers: string[];
+  recaptureAfterFix: string[];
+};
+
 const text = (value: string) => ({
   content: [{ type: "text" as const, text: value }],
   details: {},
@@ -534,6 +584,204 @@ function makeMarketabilityAudit(params: {
   };
 }
 
+function makeCaptureReport(params: {
+  productName?: string;
+  websiteUrl: string;
+  captures: CaptureItem[];
+  requiredPurposes?: string[];
+}): CaptureReport {
+  const captures = params.captures;
+  const approvedCaptures = captures.filter((capture) =>
+    ["excellent", "good", "usable"].includes(capture.quality ?? "usable") &&
+    asList(capture.issues, []).length === 0,
+  );
+  const weakCaptures = captures.filter((capture) =>
+    ["weak", "broken"].includes(capture.quality ?? "usable") ||
+    asList(capture.issues, []).length > 0,
+  );
+  const purposes = new Set(captures.map((capture) => capture.purpose).filter(Boolean));
+  const requiredPurposes = asList(params.requiredPurposes, [
+    "homepage/app entry",
+    "primary feature",
+    "secondary feature",
+    "CTA/pricing",
+    "mobile view",
+    "proof or trust screen",
+  ]);
+  const missingShots = requiredPurposes.filter((purpose) => !purposes.has(purpose));
+
+  return {
+    productName: params.productName ?? "Website product",
+    websiteUrl: normalizeUrl(params.websiteUrl),
+    totalCaptures: captures.length,
+    approvedCaptures,
+    weakCaptures,
+    coverage: Array.from(purposes).map((purpose) => `Captured: ${purpose}`),
+    missingShots,
+    recommendedRecaptures: weakCaptures.map((capture) =>
+      `Recapture ${capture.ref} (${capture.purpose ?? capture.url}) after fixing: ${asList(capture.issues, ["quality issue"]).join("; ")}`,
+    ),
+    nextAction:
+      missingShots.length > 0 || weakCaptures.length > 0
+        ? "Capture missing shots and recapture weak screens before final asset generation."
+        : "Proceed to shot selection and launch asset matrix.",
+  };
+}
+
+function makeShotSelection(params: {
+  productName?: string;
+  captures: CaptureItem[];
+  targetAssets?: string[];
+}): ShotSelection {
+  const targetAssets = asList(params.targetAssets, [
+    "Product Hunt slide 1",
+    "Product Hunt feature slide",
+    "LinkedIn launch image",
+    "X/Twitter launch image",
+    "website hero visual",
+    "15-second video hook",
+  ]);
+  const usable = params.captures.filter((capture) =>
+    ["excellent", "good", "usable"].includes(capture.quality ?? "usable") &&
+    asList(capture.issues, []).length === 0,
+  );
+  const rejectedShots = params.captures
+    .filter((capture) => !usable.includes(capture))
+    .map((capture) => ({
+      ref: capture.ref,
+      reason: asList(capture.issues, [`Quality marked as ${capture.quality ?? "unknown"}.`]).join("; "),
+    }));
+
+  const pick = (asset: string, index: number) => {
+    const lowerAsset = asset.toLowerCase();
+    const preferred = usable.find((capture) =>
+      lowerAsset.includes("mobile")
+        ? (capture.viewport ?? "").toLowerCase().includes("mobile")
+        : lowerAsset.includes("hero") || lowerAsset.includes("slide 1") || lowerAsset.includes("hook")
+          ? (capture.purpose ?? "").toLowerCase().includes("homepage") || (capture.purpose ?? "").toLowerCase().includes("entry")
+          : lowerAsset.includes("feature")
+            ? (capture.purpose ?? "").toLowerCase().includes("feature")
+            : true,
+    ) ?? usable[index % Math.max(usable.length, 1)];
+    const backup = usable.find((capture) => capture.ref !== preferred?.ref);
+    return {
+      asset,
+      primaryShot: preferred?.ref ?? "missing-shot",
+      backupShot: backup?.ref ?? null,
+      reason: preferred
+        ? `Best available ${preferred.purpose ?? "product"} shot for ${asset}.`
+        : "No usable shot available. Capture or recapture before generating this asset.",
+      copyAngle: asList(preferred?.visibleClaims, [
+        "Use a conservative product benefit supported by this screen.",
+      ])[0],
+      requiredFixes: preferred ? [] : ["Capture a usable approved screenshot for this asset."],
+    };
+  };
+
+  return {
+    productName: params.productName ?? "Website product",
+    selections: targetAssets.map(pick),
+    rejectedShots,
+  };
+}
+
+function makeVisualIssueReport(params: {
+  productName?: string;
+  captures: CaptureItem[];
+  consoleErrors?: string[];
+  layoutIssues?: string[];
+  copyIssues?: string[];
+  mobileIssues?: string[];
+}): VisualIssueReport {
+  const issues = [
+    ...params.captures.flatMap((capture) =>
+      asList(capture.issues, []).map((issue) => ({
+        screenRef: capture.ref,
+        category: capture.quality === "broken" ? "broken-screen" : "visual-quality",
+        problem: issue,
+        impact: "May weaken launch assets or mislead viewers if used in public creative.",
+        recommendedFix: "Fix the screen, then recapture before asset generation.",
+      })),
+    ),
+    ...asList(params.consoleErrors, []).map((error) => ({
+      screenRef: "browser-console",
+      category: "runtime",
+      problem: error,
+      impact: "The app may not behave correctly during capture or video recording.",
+      recommendedFix: "Fix runtime error and repeat the capture pass.",
+    })),
+    ...asList(params.layoutIssues, []).map((issue) => ({
+      screenRef: "layout",
+      category: "layout",
+      problem: issue,
+      impact: "The product may look unpolished in screenshots.",
+      recommendedFix: "Adjust layout and recapture affected viewports.",
+    })),
+    ...asList(params.copyIssues, []).map((issue) => ({
+      screenRef: "copy",
+      category: "copy",
+      problem: issue,
+      impact: "Weak or unclear copy reduces launch conversion.",
+      recommendedFix: "Rewrite the on-screen copy before final screenshots.",
+    })),
+    ...asList(params.mobileIssues, []).map((issue) => ({
+      screenRef: "mobile",
+      category: "mobile",
+      problem: issue,
+      impact: "Social traffic is often mobile; weak mobile screens reduce trust.",
+      recommendedFix: "Fix mobile layout and capture mobile proof.",
+    })),
+  ];
+  const launchBlockers = issues
+    .filter((issue) => ["broken-screen", "runtime", "mobile"].includes(issue.category))
+    .map((issue) => `${issue.screenRef}: ${issue.problem}`);
+  const severity: VisualIssueReport["severity"] =
+    launchBlockers.length > 0 ? "high" : issues.length > 3 ? "medium" : "low";
+
+  return {
+    productName: params.productName ?? "Website product",
+    severity,
+    issues,
+    launchBlockers,
+    recaptureAfterFix: Array.from(new Set(issues.map((issue) => issue.screenRef))),
+  };
+}
+
+function makeLaunchAssetMatrix(params: {
+  productName?: string;
+  selections: ShotSelection;
+  evidenceMap?: { items?: EvidenceMapItem[] };
+  formats?: string[];
+}) {
+  const formats = asList(params.formats, params.selections.selections.map((selection) => selection.asset));
+  const supportedClaims = asList(
+    params.evidenceMap?.items
+      ?.filter((item) => item.status === "supported")
+      .map((item) => item.claim),
+    [],
+  );
+
+  return {
+    productName: params.productName ?? params.selections.productName,
+    matrix: formats.map((format, index) => {
+      const selection = params.selections.selections[index] ?? params.selections.selections[0];
+      const claim = supportedClaims[index] ?? selection?.copyAngle ?? "Use a conservative evidence-based product claim.";
+      return {
+        asset: format,
+        screenshotRef: selection?.primaryShot ?? "missing-shot",
+        backupScreenshotRef: selection?.backupShot ?? null,
+        claim,
+        copyAngle: selection?.copyAngle ?? claim,
+        designInstruction:
+          "Use the selected real screenshot as the hero visual, keep text short, avoid unsupported claims, and preserve product recognizability.",
+        productionStatus: selection && selection.primaryShot !== "missing-shot" ? "ready-for-prompting" : "needs-capture",
+        requiredApproval: "Human review required before public use.",
+      };
+    }),
+    nextAction: "Use this matrix to generate image prompts, video storyboard scenes, or an exportable launch pack.",
+  };
+}
+
 function makeLaunchPack(params: {
   intelligence: SiteIntelligence;
   launchGoal?: string;
@@ -889,6 +1137,86 @@ export default definePluginEntry({
       }),
       async execute(_id, params: any) {
         return jsonText(makeCaptureChecklist(params));
+      },
+    });
+
+    api.registerTool({
+      name: "creative_capture_report",
+      label: "Create Capture Report",
+      description:
+        "Turn screenshot and capture notes into a reusable inventory of approved shots, weak shots, coverage, missing shots, and recapture needs.",
+      parameters: Type.Object({
+        productName: Type.Optional(Type.String()),
+        websiteUrl: Type.String(),
+        captures: Type.Array(Type.Object({
+          ref: Type.String(),
+          url: Type.String(),
+          viewport: Type.Optional(Type.String()),
+          purpose: Type.Optional(Type.String()),
+          quality: Type.Optional(Type.Union([
+            Type.Literal("excellent"),
+            Type.Literal("good"),
+            Type.Literal("usable"),
+            Type.Literal("weak"),
+            Type.Literal("broken"),
+          ])),
+          visibleClaims: optionalStringArray("Claims visibly supported by this capture."),
+          issues: optionalStringArray("Visual, copy, layout, data, or runtime issues in this capture."),
+          notes: Type.Optional(Type.String()),
+        })),
+        requiredPurposes: optionalStringArray("Required shot purposes for the launch pack."),
+      }),
+      async execute(_id, params: any) {
+        return jsonText(makeCaptureReport(params));
+      },
+    });
+
+    api.registerTool({
+      name: "creative_shot_selection",
+      label: "Select Launch Shots",
+      description:
+        "Choose the best screenshots for Product Hunt, social images, hero visuals, and video hooks, while rejecting weak shots.",
+      parameters: Type.Object({
+        productName: Type.Optional(Type.String()),
+        captures: Type.Array(Type.Any()),
+        targetAssets: optionalStringArray("Target assets that need screenshots."),
+      }),
+      async execute(_id, params: any) {
+        return jsonText(makeShotSelection(params));
+      },
+    });
+
+    api.registerTool({
+      name: "creative_visual_issue_report",
+      label: "Report Visual Issues",
+      description:
+        "Flag visual, copy, mobile, console, and layout issues that could make launch assets look weak or misleading.",
+      parameters: Type.Object({
+        productName: Type.Optional(Type.String()),
+        captures: Type.Array(Type.Any()),
+        consoleErrors: optionalStringArray("Browser console/runtime errors."),
+        layoutIssues: optionalStringArray("General layout issues."),
+        copyIssues: optionalStringArray("On-screen copy issues."),
+        mobileIssues: optionalStringArray("Mobile-specific issues."),
+      }),
+      async execute(_id, params: any) {
+        return jsonText(makeVisualIssueReport(params));
+      },
+    });
+
+    api.registerTool({
+      name: "creative_launch_asset_matrix",
+      label: "Create Asset Matrix",
+      description:
+        "Map each launch asset to the exact screenshot, backed claim, copy angle, format, and approval status.",
+      parameters: Type.Object({
+        productName: Type.Optional(Type.String()),
+        selections: Type.Any(),
+        evidenceMap: Type.Optional(Type.Any()),
+        formats: optionalStringArray("Asset formats to include."),
+      }),
+      async execute(_id, params: any) {
+        return jsonText(makeLaunchAssetMatrix(params));
       },
     });
 

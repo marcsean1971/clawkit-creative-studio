@@ -40,6 +40,10 @@ The result is a launch pack based on what the product actually shows, not generi
 | `creative_marketability_audit` | Scores launch readiness and identifies weak screens, missing evidence, risky claims, and next fixes. |
 | `creative_evidence_map` | Maps promotional claims to screenshots, page evidence, or user confirmations. |
 | `creative_capture_checklist` | Creates screenshot and optional video shot lists. |
+| `creative_capture_report` | Turns screenshot notes into an approved/weak/missing capture inventory. |
+| `creative_shot_selection` | Selects the best screenshots for Product Hunt, social, hero, and video assets. |
+| `creative_visual_issue_report` | Reports visual, mobile, copy, layout, and runtime issues that weaken launch assets. |
+| `creative_launch_asset_matrix` | Maps each asset to the exact screenshot, claim, copy angle, format, and approval status. |
 | `creative_launch_pack` | Produces launch copy, asset concepts, and review checklist. |
 | `creative_image_prompt_pack` | Creates image-generation prompts for promotional assets. |
 | `creative_video_storyboard` | Creates 15- or 30-second promo video storyboards. |
@@ -56,8 +60,12 @@ The result is a launch pack based on what the product actually shows, not generi
 6. Run `creative_marketability_audit` to decide whether the app is ready for promotion.
 7. Run `creative_evidence_map` before writing strong claims.
 8. Run `creative_capture_checklist` if more shots are needed.
-9. Run `creative_launch_pack`, `creative_image_prompt_pack`, or `creative_video_storyboard`.
-10. Run `creative_asset_review` before publishing or sending assets to a client.
+9. Run `creative_capture_report` to inventory approved, weak, and missing shots.
+10. Run `creative_shot_selection` to choose the best screenshots for each launch asset.
+11. Run `creative_visual_issue_report` if screenshots reveal broken UI, poor mobile layout, weak copy, or runtime issues.
+12. Run `creative_launch_asset_matrix` to map assets to screenshots and supported claims.
+13. Run `creative_launch_pack`, `creative_image_prompt_pack`, or `creative_video_storyboard`.
+14. Run `creative_asset_review` before publishing or sending assets to a client.
 
 ## Trust Layer
 
@@ -66,6 +74,18 @@ The first job is not to generate pretty assets. The first job is to know whether
 `creative_marketability_audit` checks the captured evidence and returns a readiness score, strongest screens, weak screens, supported claims, risky claims, missing evidence, recommended fixes, and asset priorities.
 
 `creative_evidence_map` connects each marketing claim to screenshots, page observations, video notes, or user confirmations. If a claim cannot be supported, the plugin marks it as risky or tells OpenClaw to remove it.
+
+## Capture Pack
+
+Capture Pack v1 turns raw browsing evidence into a production workflow.
+
+`creative_capture_report` creates a screenshot inventory with approved captures, weak captures, missing shots, and recapture recommendations.
+
+`creative_shot_selection` chooses which screenshot should be used for each target asset, including Product Hunt slides, LinkedIn, X/Twitter, hero visuals, and video hooks.
+
+`creative_visual_issue_report` flags visual, copy, mobile, layout, and runtime problems before they become embarrassing launch assets.
+
+`creative_launch_asset_matrix` maps every target asset to the screenshot, supported claim, copy angle, format, and human approval gate.
 
 ## Lovable Extension
 

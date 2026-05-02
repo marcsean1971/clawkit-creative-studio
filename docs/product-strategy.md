@@ -14,6 +14,7 @@ Core phrase:
 
 - **Understand**: scan the full website/app and build a product intelligence brief.
 - **Capture**: guide screenshots and optional video clips.
+- **Select**: choose the best screenshots for each launch asset.
 - **Audit**: decide whether the product is marketable yet.
 - **Prove**: map every promotional claim to visible evidence.
 - **Launch**: create Product Hunt, social, and website promotional assets.
@@ -85,3 +86,12 @@ The first improvement stage is the trust layer:
 - `creative_evidence_map`: links every claim to visible evidence or user confirmation.
 
 This makes Creative Studio safer and more useful before image or video generation begins.
+
+## Version 0.1.2 Upgrade
+
+Capture Pack v1 turns browsing evidence into a launch production workflow:
+
+- `creative_capture_report`: screenshot inventory and recapture plan.
+- `creative_shot_selection`: best-shot selection for each target asset.
+- `creative_visual_issue_report`: launch-blocking visual issue report.
+- `creative_launch_asset_matrix`: asset-to-shot-to-claim production matrix.

@@ -31,8 +31,12 @@ Never invent product claims. If a claim is not visible in the captured website/a
 8. Run `creative_marketability_audit` to decide whether the product is ready for promotion.
 9. Run `creative_evidence_map` before using strong promotional claims.
 10. Run `creative_capture_checklist` if more shots are needed.
-11. Run `creative_launch_pack`, `creative_image_prompt_pack`, or `creative_video_storyboard`.
-12. Run `creative_asset_review` before publishing or delivering assets.
+11. Run `creative_capture_report` after screenshots are captured.
+12. Run `creative_shot_selection` to choose the best shot for each launch asset.
+13. Run `creative_visual_issue_report` when screenshots reveal visual, mobile, copy, or runtime problems.
+14. Run `creative_launch_asset_matrix` to map assets to exact shots and supported claims.
+15. Run `creative_launch_pack`, `creative_image_prompt_pack`, or `creative_video_storyboard`.
+16. Run `creative_asset_review` before publishing or delivering assets.
 
 ## Whole-Site Understanding
 
@@ -67,6 +71,19 @@ It should answer:
 - What evidence is still missing?
 
 Then use `creative_evidence_map` to connect every claim to visible evidence or explicit user confirmation. If a claim is unsupported, remove it or rewrite it conservatively.
+
+## Capture Pack
+
+Use Capture Pack after OpenClaw has screenshots or approved video notes.
+
+The normal order is:
+
+1. `creative_capture_report`: inventory the captures and find missing or weak shots.
+2. `creative_visual_issue_report`: flag issues that block polished launch assets.
+3. `creative_shot_selection`: choose the best screenshot for each target asset.
+4. `creative_launch_asset_matrix`: connect each asset to a screenshot, supported claim, copy angle, and approval gate.
+
+This is what turns a full-site scan into a repeatable launch production workflow.
 
 ## Lovable Launch Pack
 

@@ -79,6 +79,40 @@ Input: product name, website URL, asset goal, target formats, and video preferen
 
 Output: required screenshots, optional shots, video shots, output formats, and quality rules.
 
+## `creative_capture_report`
+
+Input: product name, website URL, capture items, and required shot purposes.
+
+Each capture item may include screenshot reference, URL, viewport, purpose, quality, visible claims, issues, and notes.
+
+Output: capture inventory with:
+
+- Total captures.
+- Approved captures.
+- Weak captures.
+- Coverage.
+- Missing shots.
+- Recommended recaptures.
+- Next action.
+
+## `creative_shot_selection`
+
+Input: product name, capture items, and target assets.
+
+Output: selected primary and backup shots for each target asset, rejected shots, copy angle, selection reason, and required fixes.
+
+## `creative_visual_issue_report`
+
+Input: product name, capture items, console errors, layout issues, copy issues, and mobile issues.
+
+Output: severity, issue list, launch blockers, and screens to recapture after fixes.
+
+## `creative_launch_asset_matrix`
+
+Input: product name, shot selection result, optional evidence map, and target formats.
+
+Output: matrix that maps each asset to screenshot reference, backup screenshot, supported claim, copy angle, design instruction, production status, and approval requirement.
+
 ## `creative_launch_pack`
 
 Input: site intelligence brief, launch goal, formats, and tone.
