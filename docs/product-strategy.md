@@ -1,0 +1,77 @@
+# Product Strategy
+
+## Positioning
+
+ClawKit Creative Studio is the full-site product understanding layer for launch assets.
+
+Most tools scan a landing page or ask for a short prompt. ClawKit Creative Studio uses OpenClaw to inspect the whole product journey first, then creates promotional material from real product evidence.
+
+Core phrase:
+
+> Your app is more than its landing page. ClawKit scans the product journey and turns it into launch assets.
+
+## Product Modes
+
+- **Understand**: scan the full website/app and build a product intelligence brief.
+- **Capture**: guide screenshots and optional video clips.
+- **Launch**: create Product Hunt, social, and website promotional assets.
+- **Storyboard**: create short promo video plans from actual screens.
+- **Review**: check claims, privacy, and marketability.
+- **Lovable Launch**: turn Lovable apps into launch-ready creative packs.
+
+## Ideal Customer
+
+- Founders who built an app and now need marketing assets.
+- Lovable users who need to launch after building.
+- Agencies preparing client launch packs.
+- Indie hackers launching on Product Hunt.
+- SaaS teams that need product-led screenshots and promo videos.
+
+## Differentiation
+
+- Full-site crawl plan, not just homepage ingestion.
+- Product understanding before generation.
+- Real screenshots and user flows as source material.
+- Evidence-based claim review.
+- Lovable-specific launch workflow.
+- Works with OpenClaw's existing browser, screenshot, video, and creative tools.
+
+## MVP Definition
+
+The MVP is successful when a user can:
+
+1. Provide an app URL.
+2. Get a clear scan and capture plan.
+3. Let OpenClaw inspect the app and collect screenshots.
+4. Receive a product intelligence brief.
+5. Generate a launch pack, image prompts, and video storyboard.
+6. Review claims before publishing.
+
+## Lovable Extension
+
+This plugin should become the natural post-build companion to ClawKit for Lovable.
+
+- ClawKit for Lovable helps build, rescue, refactor, verify, and ship.
+- ClawKit Creative Studio helps package, promote, and launch.
+
+Search terms to support:
+
+- Lovable marketing
+- Lovable launch
+- Lovable screenshots
+- Lovable promo video
+- Product Hunt Lovable
+- Website to promotional video
+- App promo images
+
+## Roadmap
+
+1. Screenshot folder/report format for approved captures.
+2. Browser automation adapter for structured full-site discovery.
+3. Video recording handoff and shot validation.
+4. Image generation integration when available.
+5. Exportable launch pack files.
+6. Competitor comparison mode.
+7. Agency/client report mode.
+8. Direct handoff from ClawKit for Lovable project context.
+

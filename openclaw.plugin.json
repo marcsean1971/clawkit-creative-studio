@@ -1,0 +1,45 @@
+{
+  "id": "clawkit-creative-studio",
+  "name": "ClawKit Creative Studio",
+  "description": "Helps OpenClaw scan full websites and apps, understand product flows, and create launch-ready promotional images, scripts, storyboards, and campaign packs.",
+  "version": "0.1.0",
+  "skills": [
+    "skills/clawkit-creative-studio"
+  ],
+  "contracts": {
+    "tools": [
+      "creative_starter_guide",
+      "creative_scan_plan",
+      "creative_site_intelligence",
+      "creative_capture_checklist",
+      "creative_launch_pack",
+      "creative_image_prompt_pack",
+      "creative_video_storyboard",
+      "creative_lovable_launch_pack",
+      "creative_asset_review"
+    ]
+  },
+  "uiHints": {
+    "defaultAudience": {
+      "label": "Default audience",
+      "help": "Optional default audience for launch and promotional assets."
+    },
+    "requireApprovalForCapture": {
+      "label": "Require approval before capture",
+      "help": "Recommended before OpenClaw browses private apps, takes screenshots, or records video."
+    }
+  },
+  "configSchema": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+      "defaultAudience": {
+        "type": "string"
+      },
+      "requireApprovalForCapture": {
+        "type": "boolean",
+        "default": true
+      }
+    }
+  }
+}
