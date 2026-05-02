@@ -196,6 +196,27 @@ Input: product name, website URL, scan summary, capture report, marketability au
 
 Output: agency/client-ready markdown handoff with scan summary, capture status, marketability status, recommended assets, pending approvals, and fixes before launch.
 
+## `creative_agency_report`
+
+Input: client name, agency name, prepared-by name, report date, product name, website URL, scan summary, site intelligence, marketability audit, product audit, capture report, asset matrix, launch window, recommended launch sequence, Lovable prompt preference, and next commercial step.
+
+Output: polished client-facing markdown report with:
+
+- Executive summary.
+- Product explanation.
+- Audience and positioning.
+- Launch readiness state and score.
+- Scan evidence.
+- Strongest screens.
+- Weak or broken screens.
+- Trust and evidence gaps.
+- Recommended promotional assets.
+- Suggested launch sequence.
+- Fix-before-publishing checklist.
+- Optional Lovable fix prompts.
+
+Use it when the user needs a deliverable for a client, sales call, agency handoff, or paid launch-readiness review.
+
 ## `creative_lovable_project_context`
 
 Input: product name, Lovable URL, GitHub repo URL, product goal, launch goal, stack, previous ClawKit for Lovable readiness summary, and known risks.

@@ -1537,6 +1537,157 @@ function makeClientHandoff(params: {
   };
 }
 
+function makeAgencyReport(params: {
+  clientName?: string;
+  agencyName?: string;
+  preparedBy?: string;
+  reportDate?: string;
+  productName: string;
+  websiteUrl?: string;
+  scanSummary?: ScanSessionSummary | string;
+  intelligence?: SiteIntelligence;
+  marketabilityAudit?: MarketabilityAudit;
+  productAudit?: ProductAudit;
+  captureReport?: CaptureReport;
+  assetMatrix?: { matrix?: Array<Record<string, unknown>> };
+  launchWindow?: string;
+  recommendedLaunchSequence?: string[];
+  includeLovablePrompts?: boolean;
+  nextCommercialStep?: string;
+}) {
+  const productName = params.productName;
+  const websiteUrl = params.websiteUrl ?? params.intelligence?.websiteUrl ?? params.productAudit?.websiteUrl ?? "not supplied";
+  const productSummary =
+    params.productAudit?.productUnderstanding.summary ??
+    params.intelligence?.productSummary ??
+    "Product summary not supplied. Run `creative_site_intelligence` before final delivery.";
+  const readiness =
+    params.productAudit?.overallReadiness ??
+    params.marketabilityAudit?.readiness ??
+    "not audited";
+  const score =
+    params.productAudit?.score ??
+    params.marketabilityAudit?.score ??
+    "not scored";
+  const strongestScreens =
+    params.productAudit?.screenDiagnosis.strongestScreens ??
+    params.marketabilityAudit?.strongestScreens ??
+    params.captureReport?.approvedCaptures.map((capture) => capture.ref) ??
+    [];
+  const weakScreens =
+    params.productAudit?.screenDiagnosis.weakOrBrokenScreens ??
+    params.marketabilityAudit?.weakScreens ??
+    params.captureReport?.weakCaptures.map((capture) => `${capture.ref} (${capture.url})`) ??
+    [];
+  const trustGaps =
+    params.productAudit?.marketingDiagnosis.missingTrustSignals ??
+    params.intelligence?.proofGaps ??
+    params.marketabilityAudit?.missingEvidence ??
+    [];
+  const fixes =
+    params.productAudit?.fixBeforePromotion ??
+    params.marketabilityAudit?.recommendedFixes ??
+    ["Complete Creative Audit Mode before sending a final client report."];
+  const recommendedAssets =
+    params.productAudit?.recommendedAssets.map((asset) =>
+      `- ${asset.asset}: ${asset.readiness}. Source screens: ${asset.sourceScreens.join(", ") || "not selected"}. ${asset.purpose}`,
+    ) ??
+    params.assetMatrix?.matrix?.map((item) =>
+      `- ${String(item.asset ?? "Asset")}: ${String(item.productionStatus ?? "status unknown")}. Source: ${String(item.screenshotRef ?? "not selected")}`,
+    ) ??
+    ["- Asset plan not supplied. Run `creative_launch_asset_matrix` before delivery."];
+  const launchSequence = asList(params.recommendedLaunchSequence, [
+    "Fix launch-blocking screen, trust, and claim issues.",
+    "Rescan the improved product and approve screenshots.",
+    "Create Product Hunt, social, website, and demo-video assets from approved screens.",
+    "Run final claim, privacy, and brand review.",
+    "Publish in the agreed launch window.",
+  ]);
+  const scanSummary =
+    typeof params.scanSummary === "string"
+      ? params.scanSummary
+      : params.scanSummary
+        ? [
+            `Visited routes: ${params.scanSummary.visited.length}`,
+            `Captured evidence: ${params.scanSummary.captured.length}`,
+            `Blocked routes: ${params.scanSummary.blocked.length}`,
+            `Errors seen: ${params.scanSummary.errors.length}`,
+            `Route coverage: ${params.scanSummary.routeCoverage}`,
+          ].join("\n")
+        : "Scan summary not supplied.";
+  const lovablePrompts =
+    params.includeLovablePrompts
+      ? asList(params.productAudit?.lovableFixPrompts, [
+          `Improve ${productName} for launch: remove placeholder content, polish weak screens, clarify CTAs, and make the main workflow screenshot-ready on desktop and mobile.`,
+        ])
+      : [];
+
+  return {
+    productName,
+    fileName: `${productName.toLowerCase().replace(/[^a-z0-9]+/g, "-")}-agency-report.md`,
+    reportType: "agency-report",
+    markdown: [
+      `# ${productName} Launch Readiness Report`,
+      "",
+      `Client: ${params.clientName ?? "not supplied"}`,
+      `Prepared by: ${params.preparedBy ?? params.agencyName ?? "ClawKit Creative Studio"}`,
+      `Date: ${params.reportDate ?? "not supplied"}`,
+      `Website: ${websiteUrl}`,
+      `Launch window: ${params.launchWindow ?? "not supplied"}`,
+      "",
+      "## Executive Summary",
+      `${productName} was reviewed for product clarity, screen quality, evidence strength, launch asset readiness, and claim safety.`,
+      "",
+      `Readiness: ${readiness}`,
+      `Score: ${score}`,
+      `Recommended next commercial step: ${params.nextCommercialStep ?? "Fix the listed blockers, rescan, and then produce final launch assets."}`,
+      "",
+      "## What The Product Does",
+      productSummary,
+      "",
+      "## Audience And Positioning",
+      ...(params.productAudit?.productUnderstanding.audience ?? params.intelligence?.audience ?? ["Audience not supplied."]).map((item) => `- ${item}`),
+      "",
+      ...(params.productAudit?.productUnderstanding.positioning ?? params.intelligence?.positioning ?? ["Positioning not supplied."]).map((item) => `- ${item}`),
+      "",
+      "## Scan Evidence",
+      scanSummary,
+      "",
+      "## Strongest Screens",
+      ...(strongestScreens.length > 0 ? strongestScreens.map((item) => `- ${item}`) : ["- No approved strongest screens supplied."]),
+      "",
+      "## Weak Or Broken Screens",
+      ...(weakScreens.length > 0 ? weakScreens.map((item) => `- ${item}`) : ["- No weak screens supplied. Confirm with final visual review."]),
+      "",
+      "## Trust And Evidence Gaps",
+      ...(trustGaps.length > 0 ? trustGaps.map((item) => `- ${item}`) : ["- No trust gaps supplied. Confirm claims before publishing."]),
+      "",
+      "## Recommended Promotional Assets",
+      ...recommendedAssets,
+      "",
+      "## Suggested Launch Sequence",
+      ...launchSequence.map((item, index) => `${index + 1}. ${item}`),
+      "",
+      "## Fix Before Publishing",
+      ...fixes.map((item) => `- ${item}`),
+      "",
+      "## Before We Publish Checklist",
+      "- Screenshots and video clips approved for public use.",
+      "- No private customer data, secrets, or admin content visible.",
+      "- Claims are visible in the product or confirmed by the client.",
+      "- Mobile and desktop versions of the main flow have been checked.",
+      "- Final assets have been reviewed by the client.",
+      ...(lovablePrompts.length > 0
+        ? [
+            "",
+            "## Optional Lovable Fix Prompts",
+            ...lovablePrompts.map((prompt) => `- ${prompt}`),
+          ]
+        : []),
+    ].join("\n"),
+  };
+}
+
 function makeLovableReadinessFeedback(params: {
   productName?: string;
   lovableUrl?: string;
@@ -2758,6 +2909,34 @@ export default definePluginEntry({
       }),
       async execute(_id, params: any) {
         return jsonText(makeClientHandoff(params));
+      },
+    });
+
+    api.registerTool({
+      name: "creative_agency_report",
+      label: "Create Agency Report",
+      description:
+        "Create a polished client-facing launch readiness report from scan evidence, product audit, marketability audit, captures, assets, fixes, and optional Lovable prompts.",
+      parameters: Type.Object({
+        clientName: Type.Optional(Type.String()),
+        agencyName: Type.Optional(Type.String()),
+        preparedBy: Type.Optional(Type.String()),
+        reportDate: Type.Optional(Type.String()),
+        productName: Type.String(),
+        websiteUrl: Type.Optional(Type.String()),
+        scanSummary: Type.Optional(Type.Any()),
+        intelligence: Type.Optional(Type.Any()),
+        marketabilityAudit: Type.Optional(Type.Any()),
+        productAudit: Type.Optional(Type.Any()),
+        captureReport: Type.Optional(Type.Any()),
+        assetMatrix: Type.Optional(Type.Any()),
+        launchWindow: Type.Optional(Type.String()),
+        recommendedLaunchSequence: optionalStringArray("Client-facing launch sequence steps."),
+        includeLovablePrompts: Type.Optional(Type.Boolean()),
+        nextCommercialStep: Type.Optional(Type.String()),
+      }),
+      async execute(_id, params: any) {
+        return jsonText(makeAgencyReport(params));
       },
     });
 

@@ -20,6 +20,7 @@ This is an early public release. It is useful now, and it will improve continuou
 - Runs Creative Audit Mode before asset generation so weak screens, missing trust signals, risky claims, and best promo angles are clear.
 - Maps promotional claims back to visible evidence.
 - Creates launch packs, promotional image prompts, social copy, and video storyboards.
+- Creates agency/client-ready launch readiness reports.
 - Reviews marketing claims so assets stay honest and safe.
 - Includes a special Lovable Launch Pack workflow for Lovable apps.
 
@@ -57,6 +58,7 @@ The result is a launch pack based on what the product actually shows, not generi
 | `creative_prompt_export` | Formats image prompts and video storyboard scenes into a handoff document. |
 | `creative_social_copy_pack` | Creates LinkedIn, X/Twitter, Product Hunt, Indie Hackers, email, and banner copy. |
 | `creative_client_handoff` | Creates an agency/client-ready summary with approvals and fixes. |
+| `creative_agency_report` | Creates a polished client-facing launch readiness report with audit findings, fixes, asset recommendations, and launch sequence. |
 | `creative_lovable_project_context` | Creates shared context from Lovable, GitHub, readiness, risks, and launch goals. |
 | `creative_lovable_to_launch_workflow` | Creates the end-to-end workflow from Lovable app to launch assets. |
 | `creative_lovable_fix_prompt_pack` | Converts weak launch screens and marketability issues into Lovable fix prompts. |
@@ -89,7 +91,8 @@ The result is a launch pack based on what the product actually shows, not generi
 16. Run `creative_launch_pack`, `creative_image_prompt_pack`, or `creative_video_storyboard`.
 17. Run `creative_export_plan` when the user wants a reusable handoff package.
 18. Run `creative_launch_brief`, `creative_prompt_export`, `creative_social_copy_pack`, and `creative_client_handoff` as needed.
-19. Run `creative_asset_review` before publishing or sending assets to a client.
+19. Run `creative_agency_report` when the user needs a client-ready deliverable.
+20. Run `creative_asset_review` before publishing or sending assets to a client.
 
 ## Browser Scan
 
@@ -154,6 +157,14 @@ QA Demo Pack v1 makes the plugin easier to trust, explain, and sell.
 `creative_quality_scorecard` scores a completed run across scan coverage, screenshot quality, claim support, asset matrix completeness, export readiness, and launch safety.
 
 `creative_user_onboarding` explains what the plugin can do and gives users practical first requests.
+
+## Agency Report Mode
+
+Agency Report Mode v1 turns a scan and audit into something a freelancer, consultant, or agency can send to a client.
+
+`creative_agency_report` creates a polished markdown report with executive summary, product explanation, readiness score, scan evidence, strongest screens, weak or broken screens, trust gaps, recommended assets, suggested launch sequence, fix-before-publishing checklist, and optional Lovable fix prompts.
+
+Use this after `creative_product_audit`, `creative_capture_report`, and `creative_launch_asset_matrix` when the user wants a commercial deliverable rather than only internal workflow output.
 
 ## Lovable Extension
 

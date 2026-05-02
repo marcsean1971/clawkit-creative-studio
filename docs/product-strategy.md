@@ -24,6 +24,7 @@ Core phrase:
 - **Export**: turn the work into handoff-ready launch files.
 - **Bridge**: connect ClawKit for Lovable build work to Creative Studio launch work.
 - **Demo**: make the product easy to explain, sell, and evaluate.
+- **Agency Report**: create client-facing launch readiness reports.
 - **Lovable Launch**: turn Lovable apps into launch-ready creative packs.
 
 ## Ideal Customer
@@ -147,3 +148,12 @@ Creative Audit Mode v1 makes the product feel intelligent before it creates asse
 - Scores whether the product is blocked, needs work, promising, or ready to promote.
 - Identifies best screenshots, weak screens, missing trust signals, risky claims, and the recommended promo angle.
 - Creates Lovable fix prompts when the scanned app should be improved before promotion.
+
+## Version 0.1.8 Upgrade
+
+Agency Report Mode v1 makes Creative Studio easier to monetize:
+
+- `creative_agency_report`: client-facing launch readiness report in markdown.
+- Includes executive summary, product explanation, readiness score, scan evidence, strong screens, weak screens, trust gaps, recommended assets, launch sequence, and publishing checklist.
+- Optional Lovable fix prompts make the report useful for Lovable app improvement projects.
+- Designed for agencies, freelancers, consultants, and founders who need a professional deliverable.

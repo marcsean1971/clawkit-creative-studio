@@ -41,7 +41,8 @@ Never invent product claims. If a claim is not visible in the captured website/a
 18. Run `creative_launch_pack`, `creative_image_prompt_pack`, or `creative_video_storyboard`.
 19. Run `creative_export_plan` when the user needs a reusable launch package.
 20. Run `creative_launch_brief`, `creative_prompt_export`, `creative_social_copy_pack`, or `creative_client_handoff` as needed.
-21. Run `creative_asset_review` before publishing or delivering assets.
+21. Run `creative_agency_report` when the user needs a client-ready commercial deliverable.
+22. Run `creative_asset_review` before publishing or delivering assets.
 
 ## Whole-Site Understanding
 
@@ -159,6 +160,28 @@ Use:
 - `creative_quality_scorecard` after a run to judge whether the launch pack is trustworthy.
 
 This layer should make the product feel self-explanatory, mature, and easy to present.
+
+## Agency Report Mode
+
+Use `creative_agency_report` when the user is an agency, freelancer, consultant, or founder who needs a professional report to send to someone else.
+
+Run it after Creative Audit Mode and capture planning when possible. The report should be client-facing, not internal scratch work.
+
+It should include:
+
+- Executive summary.
+- What the product does.
+- Launch readiness score.
+- Scan evidence.
+- Strongest screens.
+- Weak or broken screens.
+- Trust and evidence gaps.
+- Recommended promotional assets.
+- Suggested launch sequence.
+- Fix-before-publishing checklist.
+- Optional Lovable fix prompts when the app came from Lovable.
+
+This is the monetization layer. Treat it as a deliverable the user can attach to an invoice, use in a sales call, or send as a client update.
 
 ## Lovable Launch Pack
 
