@@ -22,6 +22,7 @@ Core phrase:
 - **Storyboard**: create short promo video plans from actual screens.
 - **Review**: check claims, privacy, and marketability.
 - **Export**: turn the work into handoff-ready launch files.
+- **Bridge**: connect ClawKit for Lovable build work to Creative Studio launch work.
 - **Lovable Launch**: turn Lovable apps into launch-ready creative packs.
 
 ## Ideal Customer
@@ -116,3 +117,12 @@ Browser Scan v1 makes the full-site claim operational:
 - `creative_route_discovery_plan`: route discovery from nav, footer, CTAs, sitemap, and app menus.
 - `creative_scan_session_summary`: scan coverage and blocked-access report.
 - `creative_lovable_readiness_feedback`: Lovable-ready prompts for fixing launch screens.
+
+## Version 0.1.5 Upgrade
+
+Lovable Bridge v1 makes Creative Studio the natural companion to ClawKit for Lovable:
+
+- `creative_lovable_project_context`: shared Lovable/GitHub/product/launch context.
+- `creative_lovable_to_launch_workflow`: exact build-to-launch workflow.
+- `creative_lovable_fix_prompt_pack`: focused Lovable prompts for launch-readiness fixes.
+- `creative_cross_plugin_handoff`: explicit handoff between build/stabilize and promote/launch.

@@ -179,6 +179,30 @@ Input: product name, website URL, scan summary, capture report, marketability au
 
 Output: agency/client-ready markdown handoff with scan summary, capture status, marketability status, recommended assets, pending approvals, and fixes before launch.
 
+## `creative_lovable_project_context`
+
+Input: product name, Lovable URL, GitHub repo URL, product goal, launch goal, stack, previous ClawKit for Lovable readiness summary, and known risks.
+
+Output: shared Lovable-to-launch context with source of truth, creative priorities, and recommended workflow.
+
+## `creative_lovable_to_launch_workflow`
+
+Input: Lovable project context plus flags for engineering fixes, Lovable polish, and export pack.
+
+Output: phased workflow from live app verification to scan, fixes, rescan, launch pack, and export handoff.
+
+## `creative_lovable_fix_prompt_pack`
+
+Input: weak screens, visual issues, missing screens, missing proof, target launch assets, and preserve instructions.
+
+Output: focused Lovable prompts for screenshot-ready launch polish, proof support, and missing launch screens.
+
+## `creative_cross_plugin_handoff`
+
+Input: product identifiers, build status, readiness status, creative status, next owner, and blockers.
+
+Output: handoff summary, division of labor between ClawKit for Lovable and Creative Studio, blockers, next owner, and next actions.
+
 ## `creative_lovable_readiness_feedback`
 
 Input: product name, Lovable URL, weak screens, visual issues, missing proof, missing screens, and target launch assets.

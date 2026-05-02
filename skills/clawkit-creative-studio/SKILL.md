@@ -116,6 +116,19 @@ The normal order is:
 
 The plugin should not write files directly. Return markdown and structured output, then let OpenClaw write files only with user approval.
 
+## Lovable Bridge
+
+When the user is launching a Lovable app, treat Creative Studio as the post-build companion to ClawKit for Lovable.
+
+Use this order:
+
+1. `creative_lovable_project_context`: collect Lovable URL, GitHub repo, product goal, readiness summary, stack, risks, and launch goal.
+2. `creative_lovable_to_launch_workflow`: create the end-to-end path from Lovable app to launch pack.
+3. `creative_lovable_fix_prompt_pack`: convert weak launch screens into focused Lovable prompts.
+4. `creative_cross_plugin_handoff`: decide whether the next owner is ClawKit for Lovable, Creative Studio, or the user.
+
+The product story is simple: ClawKit for Lovable builds and stabilizes; Creative Studio scans, packages, promotes, and launches.
+
 ## Lovable Launch Pack
 
 When the user has a Lovable app, use `creative_lovable_launch_pack`.

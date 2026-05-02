@@ -55,6 +55,10 @@ The result is a launch pack based on what the product actually shows, not generi
 | `creative_prompt_export` | Formats image prompts and video storyboard scenes into a handoff document. |
 | `creative_social_copy_pack` | Creates LinkedIn, X/Twitter, Product Hunt, Indie Hackers, email, and banner copy. |
 | `creative_client_handoff` | Creates an agency/client-ready summary with approvals and fixes. |
+| `creative_lovable_project_context` | Creates shared context from Lovable, GitHub, readiness, risks, and launch goals. |
+| `creative_lovable_to_launch_workflow` | Creates the end-to-end workflow from Lovable app to launch assets. |
+| `creative_lovable_fix_prompt_pack` | Converts weak launch screens and marketability issues into Lovable fix prompts. |
+| `creative_cross_plugin_handoff` | Creates a handoff between ClawKit for Lovable and Creative Studio. |
 | `creative_lovable_readiness_feedback` | Turns scan findings into Lovable prompts for screenshot-ready launch screens. |
 | `creative_lovable_launch_pack` | Turns a Lovable app URL into a launch-ready marketing workflow. |
 | `creative_asset_review` | Checks claims, evidence, privacy, and visual readiness before publishing. |
@@ -117,6 +121,18 @@ Export Pack v1 turns Creative Studio output into handoff-ready content.
 `creative_export_plan` recommends the files that should be created for a launch pack, such as `launch-brief.md`, `asset-matrix.json`, `image-prompts.md`, `video-storyboard.md`, `social-copy.md`, and `client-handoff.md`.
 
 The plugin does not write files itself. It returns structured markdown, JSON-style data, and CSV-ready planning so OpenClaw can write files only when the user approves.
+
+## Lovable Bridge
+
+Lovable Bridge v1 makes Creative Studio feel like the natural next step after ClawKit for Lovable.
+
+`creative_lovable_project_context` gathers Lovable URL, GitHub repo, product goal, readiness summary, known stack, risks, and launch goal into a shared context.
+
+`creative_lovable_to_launch_workflow` creates the exact sequence from live Lovable app to scan, fixes, rescan, launch pack, and export handoff.
+
+`creative_lovable_fix_prompt_pack` turns weak screenshots, missing proof, mobile problems, and placeholder screens into focused Lovable prompts.
+
+`creative_cross_plugin_handoff` makes the division of labor explicit: ClawKit for Lovable builds and stabilizes; Creative Studio scans, packages, promotes, and launches.
 
 ## Lovable Extension
 

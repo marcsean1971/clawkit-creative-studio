@@ -952,6 +952,185 @@ function makeLovableReadinessFeedback(params) {
             : "Proceed to capture report, shot selection, and export pack.",
     };
 }
+function makeLovableProjectContext(params) {
+    const productName = params.productName ?? "Lovable app";
+    const stack = asList(params.stack, ["Lovable-generated app; inspect GitHub/package evidence if available."]);
+    const launchGoal = params.launchGoal ?? "Turn the Lovable app into launch-ready promotional assets.";
+    return {
+        productName,
+        lovableUrl: normalizeUrl(params.lovableUrl),
+        githubRepoUrl: params.githubRepoUrl ?? null,
+        productGoal: params.productGoal,
+        launchGoal,
+        sourceOfTruth: params.githubRepoUrl
+            ? "Use GitHub/OpenClaw evidence for engineering truth, and Lovable preview/deployed URL for visual launch readiness."
+            : "Use Lovable preview/deployed URL for visual launch readiness; ask for GitHub repo when engineering fixes are needed.",
+        stack,
+        readinessSummary: params.lastClawKitReadinessSummary ?? null,
+        creativePriorities: [
+            "Verify the app is live and visually stable.",
+            "Scan full product journey, not only the homepage.",
+            "Identify weak launch screens before generating assets.",
+            "Capture screenshot-safe demo states.",
+            "Create Product Hunt, social, video, and client handoff assets only from supported evidence.",
+            ...asList(params.knownRisks, []).map((risk) => `Risk to manage: ${risk}`),
+        ],
+        recommendedWorkflow: [
+            "creative_lovable_project_context",
+            "creative_lovable_to_launch_workflow",
+            "creative_browser_scan_recipe",
+            "creative_route_discovery_plan",
+            "creative_scan_session_summary",
+            "creative_lovable_readiness_feedback",
+            "creative_capture_report",
+            "creative_launch_asset_matrix",
+            "creative_export_plan",
+        ],
+    };
+}
+function makeLovableToLaunchWorkflow(params) {
+    const context = params.context;
+    return {
+        productName: context.productName,
+        workflowName: "Lovable app to launch assets",
+        phases: [
+            {
+                phase: "1. Verify app source",
+                steps: [
+                    `Open Lovable/deployed URL: ${context.lovableUrl}`,
+                    ...(context.githubRepoUrl ? [`Confirm GitHub repo context: ${context.githubRepoUrl}`] : ["Ask for GitHub repo if code fixes may be needed."]),
+                    "Confirm the user approves browsing, screenshots, and optional video notes.",
+                ],
+            },
+            {
+                phase: "2. Scan product journey",
+                steps: [
+                    "Run Browser Scan recipe in Lovable preview mode.",
+                    "Discover routes from nav, CTAs, app menus, and public proof pages.",
+                    "Capture desktop and mobile evidence.",
+                    "Summarize visited, captured, blocked, and broken routes.",
+                ],
+            },
+            {
+                phase: "3. Fix before launch",
+                steps: [
+                    ...(params.needsLovablePolish ? ["Use Lovable readiness feedback to create focused Lovable polish prompts."] : ["Use Lovable polish only if scan finds weak visual screens."]),
+                    ...(params.needsEngineeringFixes ? ["Hand engineering bugs to ClawKit for Lovable / OpenClaw code tools."] : ["Keep engineering changes out unless scan evidence shows build/runtime issues."]),
+                    "Rescan after fixes before generating final assets.",
+                ],
+            },
+            {
+                phase: "4. Produce launch pack",
+                steps: [
+                    "Create site intelligence and marketability audit.",
+                    "Map claims to evidence.",
+                    "Create capture report, shot selection, and asset matrix.",
+                    "Generate launch pack, image prompts, video storyboard, and social copy.",
+                    ...(params.includeExportPack ? ["Create Export Pack handoff files with user approval."] : ["Offer Export Pack if user wants reusable files."]),
+                ],
+            },
+        ],
+        approvalGates: [
+            "Approval before browsing private/app screens.",
+            "Approval before screenshots or video capture.",
+            "Approval before sending fixes back to Lovable.",
+            "Approval before publishing or delivering final assets.",
+        ],
+        successCriteria: [
+            "The app has screenshot-ready desktop and mobile screens.",
+            "Every major launch claim is supported by visible evidence or user confirmation.",
+            "Weak Lovable screens have focused fix prompts.",
+            "Final assets are mapped to exact screenshots and approval gates.",
+        ],
+    };
+}
+function makeLovableFixPromptPack(params) {
+    const productName = params.productName ?? "the app";
+    const preserve = asList(params.preserve, [
+        "Preserve the current product concept, main navigation, and working functionality.",
+    ]);
+    const targetAssets = asList(params.targetAssets, [
+        "Product Hunt gallery",
+        "LinkedIn launch visual",
+        "X/Twitter image",
+        "30-second demo storyboard",
+    ]);
+    const prompts = [
+        {
+            name: "Screenshot-ready launch polish",
+            prompt: [
+                `Improve ${productName} so it is ready for public launch screenshots.`,
+                `Target assets: ${targetAssets.join(", ")}.`,
+                `Preserve: ${preserve.join(" ")}`,
+                `Fix weak screens: ${asList(params.weakScreens, ["none supplied"]).join("; ")}.`,
+                `Fix visual issues: ${asList(params.visualIssues, ["none supplied"]).join("; ")}.`,
+                "Use realistic demo data, clear headings, visible CTAs, and polished desktop/mobile layouts.",
+            ].join(" "),
+        },
+        {
+            name: "Proof and claim support",
+            prompt: [
+                `Add or improve visible proof for ${productName}.`,
+                `Missing proof: ${asList(params.missingProof, ["confirm the strongest public claims"]).join("; ")}.`,
+                "Make claims visible, specific, and conservative. Do not invent metrics, customers, integrations, or compliance.",
+            ].join(" "),
+        },
+        {
+            name: "Missing launch screens",
+            prompt: [
+                `Create or improve these screenshot-critical screens for ${productName}: ${asList(params.missingScreens, ["homepage hero, primary feature, mobile view, CTA/proof screen"]).join("; ")}.`,
+                "Each screen should be clean, responsive, and useful as a standalone marketing screenshot.",
+            ].join(" "),
+        },
+    ];
+    return {
+        productName,
+        prompts,
+        usage: [
+            "Send one focused prompt at a time to Lovable.",
+            "Rescan after each Lovable pass.",
+            "Do not generate final launch assets until the capture report is clean.",
+        ],
+    };
+}
+function makeCrossPluginHandoff(params) {
+    const nextOwner = params.nextOwner ?? "clawkit-creative-studio";
+    return {
+        productName: params.productName ?? "Lovable app",
+        lovableUrl: params.lovableUrl ?? null,
+        githubRepoUrl: params.githubRepoUrl ?? null,
+        handoffSummary: [
+            `Build/stability: ${params.buildStatus ?? "not supplied"}`,
+            `Lovable readiness: ${params.readinessStatus ?? "not supplied"}`,
+            `Creative readiness: ${params.creativeStatus ?? "not supplied"}`,
+        ],
+        divisionOfLabor: {
+            "ClawKit for Lovable": [
+                "Build, rescue, refactor, verify, GitHub handoff, code fixes, and visible result checks.",
+                "Fix runtime/build problems and structural app issues before launch capture.",
+            ],
+            "ClawKit Creative Studio": [
+                "Full-site scan, screenshot inventory, marketability audit, claim evidence, creative prompts, export pack, and launch handoff.",
+                "Turn stable app screens into promotional assets.",
+            ],
+        },
+        blockers: asList(params.blockers, []),
+        nextOwner,
+        nextActions: nextOwner === "clawkit-for-lovable"
+            ? [
+                "Fix build/runtime/visual readiness issues.",
+                "Verify the app with browser and screenshot evidence.",
+                "Return to Creative Studio after the app is screenshot-ready.",
+            ]
+            : nextOwner === "clawkit-creative-studio"
+                ? [
+                    "Run Lovable project context.",
+                    "Run Browser Scan and route discovery.",
+                    "Create capture report, marketability audit, and launch assets.",
+                ]
+                : ["Ask the user to approve the next scan, fix, or publication step."],
+    };
+}
 function makeLaunchPack(params) {
     const intelligence = params.intelligence;
     const firstFeature = intelligence.visibleFeatures[0] ?? "the product's main workflow";
@@ -1502,6 +1681,77 @@ export default definePluginEntry({
             }),
             async execute(_id, params) {
                 return jsonText(makeClientHandoff(params));
+            },
+        });
+        api.registerTool({
+            name: "creative_lovable_project_context",
+            label: "Create Lovable Project Context",
+            description: "Create shared Lovable-to-launch context from Lovable URL, GitHub repo, product goal, stack, readiness summary, risks, and launch goal.",
+            parameters: Type.Object({
+                productName: Type.Optional(Type.String()),
+                lovableUrl: Type.String(),
+                githubRepoUrl: Type.Optional(Type.String()),
+                productGoal: Type.String(),
+                launchGoal: Type.Optional(Type.String()),
+                stack: optionalStringArray("Known app stack or framework signals."),
+                lastClawKitReadinessSummary: Type.Optional(Type.String()),
+                knownRisks: optionalStringArray("Known build, visual, product, or launch risks."),
+            }),
+            async execute(_id, params) {
+                return jsonText(makeLovableProjectContext(params));
+            },
+        });
+        api.registerTool({
+            name: "creative_lovable_to_launch_workflow",
+            label: "Create Lovable Launch Workflow",
+            description: "Create the end-to-end workflow from a Lovable app to scanned, fixed, evidence-backed, exportable launch assets.",
+            parameters: Type.Object({
+                context: Type.Any(),
+                needsEngineeringFixes: Type.Optional(Type.Boolean()),
+                needsLovablePolish: Type.Optional(Type.Boolean()),
+                includeExportPack: Type.Optional(Type.Boolean()),
+            }),
+            async execute(_id, params) {
+                return jsonText(makeLovableToLaunchWorkflow(params));
+            },
+        });
+        api.registerTool({
+            name: "creative_lovable_fix_prompt_pack",
+            label: "Create Lovable Fix Prompts",
+            description: "Convert visual, marketability, proof, and missing-screen issues into focused Lovable prompts for launch readiness.",
+            parameters: Type.Object({
+                productName: Type.Optional(Type.String()),
+                weakScreens: optionalStringArray("Weak or unfinished screens."),
+                visualIssues: optionalStringArray("Visual issues to fix."),
+                missingScreens: optionalStringArray("Screens needed for launch assets."),
+                missingProof: optionalStringArray("Missing proof or claim-support sections."),
+                targetAssets: optionalStringArray("Launch assets the app should support."),
+                preserve: optionalStringArray("What Lovable should preserve while fixing."),
+            }),
+            async execute(_id, params) {
+                return jsonText(makeLovableFixPromptPack(params));
+            },
+        });
+        api.registerTool({
+            name: "creative_cross_plugin_handoff",
+            label: "Create Cross-Plugin Handoff",
+            description: "Create a handoff between ClawKit for Lovable and ClawKit Creative Studio, with next owner, blockers, and division of labor.",
+            parameters: Type.Object({
+                productName: Type.Optional(Type.String()),
+                lovableUrl: Type.Optional(Type.String()),
+                githubRepoUrl: Type.Optional(Type.String()),
+                buildStatus: Type.Optional(Type.String()),
+                readinessStatus: Type.Optional(Type.String()),
+                creativeStatus: Type.Optional(Type.String()),
+                nextOwner: Type.Optional(Type.Union([
+                    Type.Literal("clawkit-for-lovable"),
+                    Type.Literal("clawkit-creative-studio"),
+                    Type.Literal("user"),
+                ])),
+                blockers: optionalStringArray("Current blockers."),
+            }),
+            async execute(_id, params) {
+                return jsonText(makeCrossPluginHandoff(params));
             },
         });
         api.registerTool({
