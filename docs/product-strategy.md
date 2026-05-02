@@ -14,6 +14,8 @@ Core phrase:
 
 - **Understand**: scan the full website/app and build a product intelligence brief.
 - **Capture**: guide screenshots and optional video clips.
+- **Audit**: decide whether the product is marketable yet.
+- **Prove**: map every promotional claim to visible evidence.
 - **Launch**: create Product Hunt, social, and website promotional assets.
 - **Storyboard**: create short promo video plans from actual screens.
 - **Review**: check claims, privacy, and marketability.
@@ -75,3 +77,11 @@ Search terms to support:
 7. Agency/client report mode.
 8. Direct handoff from ClawKit for Lovable project context.
 
+## Version 0.1.1 Upgrade
+
+The first improvement stage is the trust layer:
+
+- `creative_marketability_audit`: scores whether a scanned app is ready to promote.
+- `creative_evidence_map`: links every claim to visible evidence or user confirmation.
+
+This makes Creative Studio safer and more useful before image or video generation begins.

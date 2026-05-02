@@ -16,6 +16,8 @@ This is an early public release. It is useful now, and it will improve continuou
 - Plans a full-site scan with approval gates.
 - Guides OpenClaw to capture screenshots and optional video clips.
 - Builds a product intelligence brief from the captured evidence.
+- Scores whether the product is actually marketable yet.
+- Maps promotional claims back to visible evidence.
 - Creates launch packs, promotional image prompts, social copy, and video storyboards.
 - Reviews marketing claims so assets stay honest and safe.
 - Includes a special Lovable Launch Pack workflow for Lovable apps.
@@ -35,6 +37,8 @@ The result is a launch pack based on what the product actually shows, not generi
 | `creative_starter_guide` | Explains the workflow and user options. |
 | `creative_scan_plan` | Creates the full-site scan plan, evidence list, approvals, and stop conditions. |
 | `creative_site_intelligence` | Turns page observations and screenshots into a product understanding brief. |
+| `creative_marketability_audit` | Scores launch readiness and identifies weak screens, missing evidence, risky claims, and next fixes. |
+| `creative_evidence_map` | Maps promotional claims to screenshots, page evidence, or user confirmations. |
 | `creative_capture_checklist` | Creates screenshot and optional video shot lists. |
 | `creative_launch_pack` | Produces launch copy, asset concepts, and review checklist. |
 | `creative_image_prompt_pack` | Creates image-generation prompts for promotional assets. |
@@ -49,9 +53,19 @@ The result is a launch pack based on what the product actually shows, not generi
 3. Run `creative_scan_plan`.
 4. Use OpenClaw browser tools to inspect the site and capture screenshots or approved video clips.
 5. Run `creative_site_intelligence` with the page evidence.
-6. Run `creative_capture_checklist` if more shots are needed.
-7. Run `creative_launch_pack`, `creative_image_prompt_pack`, or `creative_video_storyboard`.
-8. Run `creative_asset_review` before publishing or sending assets to a client.
+6. Run `creative_marketability_audit` to decide whether the app is ready for promotion.
+7. Run `creative_evidence_map` before writing strong claims.
+8. Run `creative_capture_checklist` if more shots are needed.
+9. Run `creative_launch_pack`, `creative_image_prompt_pack`, or `creative_video_storyboard`.
+10. Run `creative_asset_review` before publishing or sending assets to a client.
+
+## Trust Layer
+
+The first job is not to generate pretty assets. The first job is to know whether the product is ready to market.
+
+`creative_marketability_audit` checks the captured evidence and returns a readiness score, strongest screens, weak screens, supported claims, risky claims, missing evidence, recommended fixes, and asset priorities.
+
+`creative_evidence_map` connects each marketing claim to screenshots, page observations, video notes, or user confirmations. If a claim cannot be supported, the plugin marks it as risky or tells OpenClaw to remove it.
 
 ## Lovable Extension
 
@@ -111,4 +125,3 @@ Create LinkedIn, X, and website hero image prompts based on the actual app scree
 - `docs/tool-contracts.md`: tool input/output contracts.
 - `docs/clawhub-listing.md`: marketplace listing copy.
 - `docs/product-strategy.md`: positioning and roadmap.
-

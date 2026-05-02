@@ -39,6 +39,40 @@ Output: product intelligence brief with:
 - Do-not-claim list.
 - Recommended next action.
 
+## `creative_marketability_audit`
+
+Input: site intelligence brief, approved screenshot references, inspected pages, weak or broken screens, supported claims, risky claims, missing evidence, and whether mobile evidence, primary CTA, demo data, and video-ready flow are present.
+
+Output: marketability audit with:
+
+- Readiness state.
+- Score.
+- Strongest screens.
+- Weak screens.
+- Supported claims.
+- Risky claims.
+- Missing evidence.
+- Recommended fixes.
+- Launch asset priority.
+- Next action.
+
+Use it before generating final promotional assets.
+
+## `creative_evidence_map`
+
+Input: marketing claims, visible evidence, user-confirmed claims, and do-not-claim rules.
+
+Output: claim-by-claim evidence map with:
+
+- Support status.
+- Supporting evidence.
+- Risk level.
+- Safer rewrite.
+- Publishable claims.
+- Claims to remove.
+
+Use it before final copy, image prompts, video scripts, or public launch copy.
+
 ## `creative_capture_checklist`
 
 Input: product name, website URL, asset goal, target formats, and video preference.
@@ -74,4 +108,3 @@ Output: Lovable-specific launch workflow, recommended assets, Lovable follow-up 
 Input: asset description, claims, evidence, private-data flag, and visual issues.
 
 Output: publish readiness, evidence status, risks, required fixes, and approval checklist.
-

@@ -10,7 +10,7 @@ Scan full websites and apps with OpenClaw, then create launch-ready promotional 
 
 ## Long Description
 
-ClawKit Creative Studio is an OpenClaw plugin that turns a real website or app into evidence-based promotional material. Instead of scanning only a landing page, it helps OpenClaw plan a full-site product scan, capture screenshots and approved video evidence, understand pages and user flows, and generate launch packs, promotional image prompts, social copy, and video storyboards.
+ClawKit Creative Studio is an OpenClaw plugin that turns a real website or app into evidence-based promotional material. Instead of scanning only a landing page, it helps OpenClaw plan a full-site product scan, capture screenshots and approved video evidence, understand pages and user flows, audit whether the product is marketable yet, map claims to evidence, and generate launch packs, promotional image prompts, social copy, and video storyboards.
 
 It is especially useful for Lovable apps: Lovable builds the app, ClawKit Creative Studio helps launch it. The Lovable Launch Pack workflow scans the preview or deployed app, identifies the best screens, flags weak or broken launch moments, and creates Product Hunt, LinkedIn, X/Twitter, hero image, feature card, and demo video concepts.
 
@@ -31,11 +31,11 @@ clawhub package publish MarcSean1971/clawkit-creative-studio@main \
   --family code-plugin \
   --name @clawkit/clawkit-creative-studio \
   --display-name "ClawKit Creative Studio" \
-  --version 0.1.0 \
+  --version 0.1.1 \
   --source-repo MarcSean1971/clawkit-creative-studio \
   --source-commit "$(git rev-parse HEAD)" \
   --source-ref main \
-  --changelog "Initial Creative Studio release"
+  --changelog "Add marketability audit and evidence mapping"
 ```
 
 ## Keywords
@@ -53,4 +53,3 @@ clawhub package publish MarcSean1971/clawkit-creative-studio@main \
 - Lovable launch
 - screenshots
 - video storyboard
-

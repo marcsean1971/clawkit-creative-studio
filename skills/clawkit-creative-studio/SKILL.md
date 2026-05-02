@@ -28,9 +28,11 @@ Never invent product claims. If a claim is not visible in the captured website/a
 5. Ask for approval before browsing private screens, taking screenshots, or recording video.
 6. Use trusted OpenClaw browser/screenshot/video tools to gather evidence.
 7. Run `creative_site_intelligence` with page observations and screenshot references.
-8. Run `creative_capture_checklist` if more shots are needed.
-9. Run `creative_launch_pack`, `creative_image_prompt_pack`, or `creative_video_storyboard`.
-10. Run `creative_asset_review` before publishing or delivering assets.
+8. Run `creative_marketability_audit` to decide whether the product is ready for promotion.
+9. Run `creative_evidence_map` before using strong promotional claims.
+10. Run `creative_capture_checklist` if more shots are needed.
+11. Run `creative_launch_pack`, `creative_image_prompt_pack`, or `creative_video_storyboard`.
+12. Run `creative_asset_review` before publishing or delivering assets.
 
 ## Whole-Site Understanding
 
@@ -50,6 +52,21 @@ Capture evidence from:
 - Dashboard or primary app workflow with safe demo data.
 - Mobile and desktop views.
 - Proof, testimonials, integrations, or docs pages when public.
+
+## Trust Layer
+
+Before creating final assets, use `creative_marketability_audit`.
+
+It should answer:
+
+- Are the captured screens strong enough to market?
+- Which screens should be used first?
+- Which screens are weak, broken, unfinished, or placeholder-heavy?
+- Which claims are supported?
+- Which claims are risky?
+- What evidence is still missing?
+
+Then use `creative_evidence_map` to connect every claim to visible evidence or explicit user confirmation. If a claim is unsupported, remove it or rewrite it conservatively.
 
 ## Lovable Launch Pack
 
@@ -96,4 +113,3 @@ Stop and ask the user before continuing if:
 ## Tone
 
 Be product-minded and practical. The user wants wow, but trust is the wow. Say clearly when the product is not ready for promotion yet, then give the fastest path to make it launchable.
-

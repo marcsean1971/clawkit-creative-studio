@@ -9,6 +9,9 @@ const optionalStringArray = (description) => Type.Optional(Type.Array(Type.Strin
 function asList(items, fallback) {
     return items && items.length > 0 ? items : fallback;
 }
+function clampScore(score) {
+    return Math.max(0, Math.min(100, Math.round(score)));
+}
 function normalizeUrl(url) {
     const trimmed = url.trim();
     if (trimmed.startsWith("http://") || trimmed.startsWith("https://")) {
@@ -232,6 +235,126 @@ function makeCaptureChecklist(params) {
             "Capture both desktop and mobile when assets will be public.",
             "Do not generate final marketing if the app has obvious visual or runtime errors.",
         ],
+    };
+}
+function makeEvidenceMap(params) {
+    const evidence = asList(params.evidence, []);
+    const confirmedByUser = asList(params.confirmedByUser, []);
+    const doNotClaim = asList(params.doNotClaim, []);
+    const items = params.claims.map((claim) => {
+        const lowerClaim = claim.toLowerCase();
+        const blocked = doNotClaim.find((blockedClaim) => lowerClaim.includes(blockedClaim.toLowerCase()) || blockedClaim.toLowerCase().includes(lowerClaim));
+        const directEvidence = evidence.filter((item) => item.toLowerCase().includes(lowerClaim) || lowerClaim.includes(item.toLowerCase()));
+        const confirmation = confirmedByUser.filter((item) => item.toLowerCase().includes(lowerClaim) || lowerClaim.includes(item.toLowerCase()));
+        const supportingEvidence = [...directEvidence, ...confirmation.map((item) => `User confirmed: ${item}`)];
+        if (blocked) {
+            return {
+                claim,
+                status: "do-not-use",
+                supportingEvidence: [],
+                risk: "high",
+                saferRewrite: "Remove this claim or ask the user for explicit evidence and permission.",
+            };
+        }
+        if (supportingEvidence.length > 0) {
+            return {
+                claim,
+                status: "supported",
+                supportingEvidence,
+                risk: "low",
+                saferRewrite: claim,
+            };
+        }
+        const riskyWords = ["best", "only", "guaranteed", "secure", "compliant", "revenue", "customers", "fastest", "ai-powered"];
+        const hasRiskyWord = riskyWords.some((word) => lowerClaim.includes(word));
+        return {
+            claim,
+            status: hasRiskyWord ? "unsupported" : "needs-confirmation",
+            supportingEvidence: [],
+            risk: hasRiskyWord ? "high" : "medium",
+            saferRewrite: `Based on visible product screens, ${claim.replace(/\.$/, "")}.`,
+        };
+    });
+    const publishableClaims = items
+        .filter((item) => item.status === "supported")
+        .map((item) => item.claim);
+    const claimsToRemove = items
+        .filter((item) => item.status === "unsupported" || item.status === "do-not-use")
+        .map((item) => item.claim);
+    return {
+        items,
+        summary: claimsToRemove.length > 0
+            ? "Some claims are unsupported or blocked. Remove or verify them before creating public assets."
+            : publishableClaims.length > 0
+                ? "Supported claims are ready for human brand/legal review."
+                : "No claims are fully supported yet. Capture more evidence or ask the user to confirm claims.",
+        publishableClaims,
+        claimsToRemove,
+    };
+}
+function makeMarketabilityAudit(params) {
+    const intelligence = params.intelligence;
+    const screenshots = asList(params.screenshotRefs, []);
+    const inspectedPages = asList(params.inspectedPages, []);
+    const weakScreens = [
+        ...asList(params.brokenOrWeakScreens, []),
+        ...intelligence.proofGaps.filter((gap) => !gap.toLowerCase().includes("confirmed proof claims")),
+    ];
+    const supportedClaims = asList(params.supportedClaims, intelligence.visibleFeatures.slice(0, 5));
+    const riskyClaims = [
+        ...asList(params.riskyClaims, []),
+        ...intelligence.doNotClaim.slice(0, 3),
+    ];
+    const missingEvidence = [
+        ...asList(params.missingEvidence, []),
+        ...(screenshots.length === 0 ? ["No approved screenshots supplied."] : []),
+        ...(inspectedPages.length < 3 ? ["Fewer than three pages or flows inspected."] : []),
+        ...(params.hasMobileEvidence ? [] : ["No mobile screenshot evidence supplied."]),
+        ...(params.hasPrimaryCta ? [] : ["Primary CTA has not been confirmed."]),
+        ...(params.hasDemoData ? [] : ["Safe demo data has not been confirmed for screenshots."]),
+    ];
+    const score = clampScore(35 +
+        Math.min(20, screenshots.length * 4) +
+        Math.min(15, inspectedPages.length * 3) +
+        (params.hasMobileEvidence ? 10 : 0) +
+        (params.hasPrimaryCta ? 10 : 0) +
+        (params.hasDemoData ? 5 : 0) +
+        (params.hasVideoReadyFlow ? 5 : 0) -
+        Math.min(30, weakScreens.length * 6) -
+        Math.min(20, missingEvidence.length * 4));
+    const readiness = score >= 85 ? "launch-ready" : score >= 70 ? "marketable" : score >= 45 ? "needs-polish" : "not-ready";
+    return {
+        productName: intelligence.productName,
+        websiteUrl: intelligence.websiteUrl,
+        readiness,
+        score,
+        strongestScreens: screenshots.length > 0
+            ? screenshots.slice(0, 6)
+            : ["Capture homepage/app shell, primary workflow, feature screen, CTA, proof page, and mobile view."],
+        weakScreens,
+        supportedClaims,
+        riskyClaims,
+        missingEvidence,
+        recommendedFixes: [
+            ...(weakScreens.length > 0 ? ["Fix or exclude weak/broken screens before final assets."] : []),
+            ...(missingEvidence.includes("No approved screenshots supplied.") ? ["Capture approved screenshots before image generation."] : []),
+            ...(params.hasMobileEvidence ? [] : ["Capture mobile views for social and launch gallery confidence."]),
+            ...(params.hasPrimaryCta ? [] : ["Clarify and capture the primary CTA."]),
+            ...(params.hasDemoData ? [] : ["Create safe demo data for dashboard or workflow screenshots."]),
+            "Run `creative_evidence_map` before final copy or image prompts.",
+        ],
+        launchAssetPriority: [
+            "Product Hunt gallery from strongest full-product flow.",
+            "LinkedIn launch image with one proof-based claim.",
+            "X/Twitter visual with short hook and real screen.",
+            "Feature-card carousel from captured screens.",
+            ...(params.hasVideoReadyFlow ? ["15-second demo clip storyboard."] : ["Storyboard video first; record only after flow is clean."]),
+        ],
+        nextAction: readiness === "launch-ready"
+            ? "Create final launch pack, image prompts, and video storyboard, then run asset review."
+            : readiness === "marketable"
+                ? "Create launch assets, but fix listed weak spots before public launch."
+                : "Improve evidence and screens before generating final promotional assets.",
     };
 }
 function makeLaunchPack(params) {
@@ -485,6 +608,41 @@ export default definePluginEntry({
             }),
             async execute(_id, params) {
                 return jsonText(makeSiteIntelligence(params));
+            },
+        });
+        api.registerTool({
+            name: "creative_marketability_audit",
+            label: "Audit Marketability",
+            description: "Score whether a scanned website or app is ready for promotional assets, and identify weak screens, missing evidence, risky claims, and next fixes.",
+            parameters: Type.Object({
+                intelligence: Type.Any(),
+                screenshotRefs: optionalStringArray("Approved screenshots or capture references."),
+                inspectedPages: optionalStringArray("Pages or flows OpenClaw inspected."),
+                brokenOrWeakScreens: optionalStringArray("Screens that are broken, unfinished, placeholder-heavy, or visually weak."),
+                supportedClaims: optionalStringArray("Claims already visible in evidence or confirmed by the user."),
+                riskyClaims: optionalStringArray("Claims that may be unsupported or too strong."),
+                missingEvidence: optionalStringArray("Evidence still needed before final assets."),
+                hasMobileEvidence: Type.Optional(Type.Boolean()),
+                hasPrimaryCta: Type.Optional(Type.Boolean()),
+                hasDemoData: Type.Optional(Type.Boolean()),
+                hasVideoReadyFlow: Type.Optional(Type.Boolean()),
+            }),
+            async execute(_id, params) {
+                return jsonText(makeMarketabilityAudit(params));
+            },
+        });
+        api.registerTool({
+            name: "creative_evidence_map",
+            label: "Map Claims To Evidence",
+            description: "Map promotional claims to visible evidence or user confirmations so OpenClaw avoids unsupported marketing copy.",
+            parameters: Type.Object({
+                claims: Type.Array(Type.String(), { description: "Marketing claims to verify." }),
+                evidence: optionalStringArray("Visible evidence from pages, screenshots, videos, or product copy."),
+                confirmedByUser: optionalStringArray("Claims explicitly confirmed by the product owner."),
+                doNotClaim: optionalStringArray("Claims or claim categories to avoid."),
+            }),
+            async execute(_id, params) {
+                return jsonText(makeEvidenceMap(params));
             },
         });
         api.registerTool({
