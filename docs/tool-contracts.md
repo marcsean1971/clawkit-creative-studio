@@ -21,6 +21,24 @@ Output: approval-gated full-site scan plan with:
 
 This tool does not browse or crawl. It tells OpenClaw what to inspect with trusted tools.
 
+## `creative_browser_scan_recipe`
+
+Input: website URL, scan mode, product type, and whether to include mobile, authenticated flow, and video notes.
+
+Output: repeatable browser scan recipe with scan passes, viewports, steps, capture points, evidence to record, console checks, stop conditions, and expected outputs.
+
+## `creative_route_discovery_plan`
+
+Input: website URL, known routes, product type, sitemap flag, and authenticated-area flag.
+
+Output: route discovery plan with sources, route candidates, interaction targets, prioritization rules, and blocked-access fallbacks.
+
+## `creative_scan_session_summary`
+
+Input: product name, website URL, visited routes, captures, blocked routes, errors, discovered routes, and expected routes.
+
+Output: session summary with visited/captured/blocked/errors, route coverage, missing access, and next scan actions.
+
 ## `creative_site_intelligence`
 
 Input: website URL, product name, page evidence, visible features, CTAs, screenshot references, brand colors, tone, user instructions, known claims, and missing/broken screens.
@@ -160,6 +178,12 @@ Output: markdown copy pack for LinkedIn, X/Twitter, Product Hunt, Indie Hackers,
 Input: product name, website URL, scan summary, capture report, marketability audit, asset matrix, and pending approvals.
 
 Output: agency/client-ready markdown handoff with scan summary, capture status, marketability status, recommended assets, pending approvals, and fixes before launch.
+
+## `creative_lovable_readiness_feedback`
+
+Input: product name, Lovable URL, weak screens, visual issues, missing proof, missing screens, and target launch assets.
+
+Output: Lovable readiness status, focused Lovable prompts, acceptance criteria, and next action.
 
 ## `creative_lovable_launch_pack`
 

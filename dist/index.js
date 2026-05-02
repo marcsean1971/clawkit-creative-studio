@@ -128,6 +128,177 @@ function makeScanPlan(params) {
         ],
     };
 }
+function makeBrowserScanRecipe(params) {
+    const websiteUrl = normalizeUrl(params.websiteUrl);
+    const mode = params.mode ?? "public-site";
+    const desktopPass = {
+        name: "Desktop product scan",
+        viewport: "desktop 1440x900",
+        steps: [
+            "Open the entry URL and wait for the page to settle.",
+            "Record page title, headline, primary CTA, visible product category, and first-screen value proposition.",
+            "Follow top navigation links, footer links, and visible primary CTAs.",
+            "Inspect feature, pricing, proof, docs, about, contact, and demo pages when available.",
+            "For each meaningful page, record purpose, visible features, claims, CTA, visual quality, and screenshot reference.",
+        ],
+        capturePoints: [
+            "Homepage or app entry first viewport.",
+            "Primary feature page or workflow.",
+            "Pricing/CTA page.",
+            "Proof, testimonial, integration, or trust page.",
+            "Any screen that clearly explains the product better than the homepage.",
+        ],
+        evidenceToRecord: [
+            "URL, title, page purpose, screenshot ref, visible features, visible claims, CTA, and issues.",
+            "Brand colors, tone, UI density, product category, and target audience signals.",
+        ],
+    };
+    const mobilePass = {
+        name: "Mobile readiness scan",
+        viewport: "mobile 390x844",
+        steps: [
+            "Open the entry URL on mobile viewport.",
+            "Check navigation, hero, CTA visibility, text wrapping, and horizontal overflow.",
+            "Capture the most important public screen and one primary feature/CTA screen.",
+        ],
+        capturePoints: [
+            "Mobile homepage or app entry.",
+            "Mobile CTA or primary workflow.",
+        ],
+        evidenceToRecord: [
+            "Mobile layout quality, clipped text, overlapping UI, CTA visibility, and launch-blocking issues.",
+        ],
+    };
+    const authPass = {
+        name: "Approved app/demo flow scan",
+        viewport: "desktop 1440x900",
+        steps: [
+            "Confirm explicit user approval before opening authenticated or non-public screens.",
+            "Use only demo data or user-approved safe content.",
+            "Inspect onboarding, dashboard, primary workflow, settings/integrations, reports, and success states when available.",
+            "Stop immediately if private data, secrets, billing, admin-only, or customer data appears.",
+        ],
+        capturePoints: [
+            "Dashboard or main app surface with safe demo data.",
+            "Primary workflow start, middle, and success state.",
+            "Settings/integrations only if safe and useful for marketing.",
+        ],
+        evidenceToRecord: [
+            "Workflow steps, feature proof, data safety, private-data risk, and screenshot refs.",
+        ],
+    };
+    return {
+        websiteUrl,
+        mode,
+        scanPasses: [
+            desktopPass,
+            ...(params.includeMobile ?? true ? [mobilePass] : []),
+            ...(params.includeAuthenticatedFlow ? [authPass] : []),
+        ],
+        consoleChecks: [
+            "Check browser console after initial load.",
+            "Check console after navigation to the primary feature or app screen.",
+            "Record runtime, network, hydration, route, and asset-loading errors.",
+        ],
+        stopConditions: [
+            "Login blocks progress and the user has not approved access.",
+            "Private customer, billing, secret, admin, or production data is visible.",
+            "The app is broken enough that promotional capture would mislead users.",
+            "The site blocks automated browsing or capture.",
+        ],
+        expectedOutputs: [
+            "Route list and page purposes.",
+            "Screenshot/capture report.",
+            "Visual issue report.",
+            "Site intelligence brief.",
+            "Marketability audit.",
+            ...(params.includeVideoNotes ? ["Video shot notes for storyboard creation."] : []),
+        ],
+    };
+}
+function makeRouteDiscoveryPlan(params) {
+    const websiteUrl = normalizeUrl(params.websiteUrl);
+    const base = websiteUrl.replace(/\/$/, "");
+    const commonRoutes = [
+        base,
+        `${base}/features`,
+        `${base}/pricing`,
+        `${base}/about`,
+        `${base}/contact`,
+        `${base}/blog`,
+        `${base}/docs`,
+        `${base}/login`,
+        `${base}/signup`,
+        `${base}/demo`,
+    ];
+    return {
+        websiteUrl,
+        sources: [
+            "Top navigation links.",
+            "Footer links.",
+            "Homepage CTAs and secondary buttons.",
+            "Feature cards and product section links.",
+            "Pricing CTAs.",
+            "Docs/blog links when product education matters.",
+            ...(params.hasSitemap ? [`${base}/sitemap.xml or linked sitemap.`] : []),
+            ...(params.hasAuthenticatedArea ? ["Approved app menus after login/demo access."] : []),
+        ],
+        routeCandidates: [...asList(params.knownRoutes, []), ...commonRoutes],
+        interactionTargets: [
+            "Primary CTA buttons.",
+            "Sign up / Get started / Try demo.",
+            "Product tour, video, or demo links.",
+            "Feature cards that reveal detail pages.",
+            "Tabs, accordions, filters, or app menus that change visible product evidence.",
+        ],
+        prioritizationRules: [
+            "Prioritize routes that show real product value over generic company pages.",
+            "Prioritize screens that can support public claims.",
+            "Prioritize desktop plus mobile for the main conversion path.",
+            "Avoid low-value blog/legal pages unless they support trust or proof.",
+            "Stop before private data unless the user approved safe demo access.",
+        ],
+        blockedAccessFallbacks: [
+            "Ask the user for a demo login or approved screenshots.",
+            "Ask the user to create screenshot-safe demo data.",
+            "Use public pages only and mark authenticated product claims as unverified.",
+            "Generate Lovable or product prompts to create public proof screens.",
+        ],
+    };
+}
+function makeScanSessionSummary(params) {
+    const visited = asList(params.visited, []);
+    const captured = asList(params.captured, []);
+    const blocked = asList(params.blocked, []);
+    const errors = asList(params.errors, []);
+    const discovered = asList(params.discoveredRoutes, []);
+    const expected = asList(params.expectedRoutes, []);
+    const coveredCount = expected.filter((route) => visited.includes(route) || discovered.includes(route)).length;
+    const coverageRatio = expected.length > 0 ? coveredCount / expected.length : visited.length >= 5 ? 0.75 : visited.length >= 3 ? 0.5 : 0.25;
+    const routeCoverage = coverageRatio >= 0.7 ? "high" : coverageRatio >= 0.4 ? "medium" : "low";
+    return {
+        productName: params.productName ?? "Website product",
+        websiteUrl: normalizeUrl(params.websiteUrl),
+        visited,
+        captured,
+        blocked,
+        errors,
+        routeCoverage,
+        missingAccess: [
+            ...(blocked.length > 0 ? blocked.map((item) => `Blocked: ${item}`) : []),
+            ...(expected.length > 0
+                ? expected.filter((route) => !visited.includes(route) && !discovered.includes(route)).map((route) => `Not visited: ${route}`)
+                : []),
+        ],
+        nextScanActions: [
+            ...(routeCoverage === "low" ? ["Discover and inspect more routes before creating final assets."] : []),
+            ...(captured.length === 0 ? ["Capture screenshots for the strongest product screens."] : []),
+            ...(errors.length > 0 ? ["Fix or document browser/runtime errors before launch capture."] : []),
+            ...(blocked.length > 0 ? ["Ask the user for approved access, demo data, or screenshots for blocked flows."] : []),
+            "Run site intelligence, marketability audit, capture report, and asset matrix after scan evidence is complete.",
+        ],
+    };
+}
 function makeSiteIntelligence(params) {
     const websiteUrl = normalizeUrl(params.websiteUrl);
     const productName = params.productName ?? "Website product";
@@ -736,6 +907,51 @@ function makeClientHandoff(params) {
         ].join("\n"),
     };
 }
+function makeLovableReadinessFeedback(params) {
+    const weakScreens = asList(params.weakScreens, []);
+    const visualIssues = asList(params.visualIssues, []);
+    const missingProof = asList(params.missingProof, []);
+    const missingScreens = asList(params.missingScreens, []);
+    const targetAssets = asList(params.targetLaunchAssets, [
+        "Product Hunt gallery",
+        "LinkedIn launch image",
+        "X/Twitter launch visual",
+        "30-second demo storyboard",
+    ]);
+    const prompts = [
+        ...(weakScreens.length > 0
+            ? [`Improve these launch-critical screens so they are screenshot-ready: ${weakScreens.join("; ")}. Remove placeholders, align spacing, clarify hierarchy, and use safe demo data.`]
+            : []),
+        ...(visualIssues.length > 0
+            ? [`Fix these visual issues before launch capture: ${visualIssues.join("; ")}. Verify desktop and mobile layouts after changes.`]
+            : []),
+        ...(missingProof.length > 0
+            ? [`Add or improve proof sections that support marketing claims: ${missingProof.join("; ")}. Keep claims factual and visible on screen.`]
+            : []),
+        ...(missingScreens.length > 0
+            ? [`Create screenshot-ready screens for: ${missingScreens.join("; ")}. Each screen should have a clear headline, realistic demo state, and obvious CTA or product value.`]
+            : []),
+        `Prepare the app for these launch assets: ${targetAssets.join(", ")}. Prioritize screens that show real product value, not generic landing-page copy.`,
+    ];
+    return {
+        productName: params.productName ?? "Lovable app",
+        lovableUrl: params.lovableUrl ?? null,
+        readiness: weakScreens.length + visualIssues.length + missingProof.length + missingScreens.length > 0
+            ? "needs-lovable-polish"
+            : "ready-for-creative-capture",
+        lovablePrompts: prompts,
+        acceptanceCriteria: [
+            "No placeholder data appears in launch screenshots.",
+            "Mobile layout is clean for the main conversion path.",
+            "Primary CTA is visible and understandable.",
+            "At least one product screen supports each major marketing claim.",
+            "Screens are ready for Product Hunt/social/video capture.",
+        ],
+        nextAction: prompts.length > 1
+            ? "Send the focused prompt to Lovable, then rerun browser scan and capture report."
+            : "Proceed to capture report, shot selection, and export pack.",
+    };
+}
 function makeLaunchPack(params) {
     const intelligence = params.intelligence;
     const firstFeature = intelligence.visibleFeatures[0] ?? "the product's main workflow";
@@ -960,6 +1176,60 @@ export default definePluginEntry({
             }),
             async execute(_id, params) {
                 return jsonText(makeScanPlan(params));
+            },
+        });
+        api.registerTool({
+            name: "creative_browser_scan_recipe",
+            label: "Create Browser Scan Recipe",
+            description: "Create a repeatable OpenClaw browser inspection protocol for desktop, mobile, console checks, captures, and approved app flows.",
+            parameters: Type.Object({
+                websiteUrl: Type.String(),
+                mode: Type.Optional(Type.Union([
+                    Type.Literal("public-site"),
+                    Type.Literal("app-preview"),
+                    Type.Literal("authenticated-demo"),
+                    Type.Literal("lovable-preview"),
+                ])),
+                productType: Type.Optional(Type.String()),
+                includeMobile: Type.Optional(Type.Boolean()),
+                includeAuthenticatedFlow: Type.Optional(Type.Boolean()),
+                includeVideoNotes: Type.Optional(Type.Boolean()),
+            }),
+            async execute(_id, params) {
+                return jsonText(makeBrowserScanRecipe(params));
+            },
+        });
+        api.registerTool({
+            name: "creative_route_discovery_plan",
+            label: "Plan Route Discovery",
+            description: "Plan how OpenClaw should discover important website/app routes from nav, CTAs, sitemap, menus, links, and approved logged-in areas.",
+            parameters: Type.Object({
+                websiteUrl: Type.String(),
+                knownRoutes: optionalStringArray("Known routes or URLs to include."),
+                productType: Type.Optional(Type.String()),
+                hasSitemap: Type.Optional(Type.Boolean()),
+                hasAuthenticatedArea: Type.Optional(Type.Boolean()),
+            }),
+            async execute(_id, params) {
+                return jsonText(makeRouteDiscoveryPlan(params));
+            },
+        });
+        api.registerTool({
+            name: "creative_scan_session_summary",
+            label: "Summarize Scan Session",
+            description: "Summarize what OpenClaw visited, captured, could not access, errors seen, route coverage, and next scan actions.",
+            parameters: Type.Object({
+                productName: Type.Optional(Type.String()),
+                websiteUrl: Type.String(),
+                visited: optionalStringArray("Visited URLs or routes."),
+                captured: optionalStringArray("Screenshot or capture references."),
+                blocked: optionalStringArray("Blocked routes or flows."),
+                errors: optionalStringArray("Browser, console, route, or capture errors."),
+                discoveredRoutes: optionalStringArray("Routes discovered during browsing."),
+                expectedRoutes: optionalStringArray("Expected routes for coverage scoring."),
+            }),
+            async execute(_id, params) {
+                return jsonText(makeScanSessionSummary(params));
             },
         });
         api.registerTool({
@@ -1232,6 +1502,23 @@ export default definePluginEntry({
             }),
             async execute(_id, params) {
                 return jsonText(makeClientHandoff(params));
+            },
+        });
+        api.registerTool({
+            name: "creative_lovable_readiness_feedback",
+            label: "Create Lovable Readiness Feedback",
+            description: "Turn scan problems into focused Lovable prompts that make the app screenshot-ready for launch assets.",
+            parameters: Type.Object({
+                productName: Type.Optional(Type.String()),
+                lovableUrl: Type.Optional(Type.String()),
+                weakScreens: optionalStringArray("Weak or unfinished Lovable screens."),
+                visualIssues: optionalStringArray("Visual issues found during scan."),
+                missingProof: optionalStringArray("Claims or proof sections missing from the app."),
+                missingScreens: optionalStringArray("Screens needed for launch assets."),
+                targetLaunchAssets: optionalStringArray("Launch assets the app should support."),
+            }),
+            async execute(_id, params) {
+                return jsonText(makeLovableReadinessFeedback(params));
             },
         });
         api.registerTool({

@@ -25,20 +25,22 @@ Never invent product claims. If a claim is not visible in the captured website/a
 2. Ask what the user wants: launch pack, Product Hunt gallery, social assets, video storyboard, promotional images, or marketability review.
 3. Run `creative_starter_guide` when the user needs orientation.
 4. Run `creative_scan_plan`.
-5. Ask for approval before browsing private screens, taking screenshots, or recording video.
-6. Use trusted OpenClaw browser/screenshot/video tools to gather evidence.
-7. Run `creative_site_intelligence` with page observations and screenshot references.
-8. Run `creative_marketability_audit` to decide whether the product is ready for promotion.
-9. Run `creative_evidence_map` before using strong promotional claims.
-10. Run `creative_capture_checklist` if more shots are needed.
-11. Run `creative_capture_report` after screenshots are captured.
-12. Run `creative_shot_selection` to choose the best shot for each launch asset.
-13. Run `creative_visual_issue_report` when screenshots reveal visual, mobile, copy, or runtime problems.
-14. Run `creative_launch_asset_matrix` to map assets to exact shots and supported claims.
-15. Run `creative_launch_pack`, `creative_image_prompt_pack`, or `creative_video_storyboard`.
-16. Run `creative_export_plan` when the user needs a reusable launch package.
-17. Run `creative_launch_brief`, `creative_prompt_export`, `creative_social_copy_pack`, or `creative_client_handoff` as needed.
-18. Run `creative_asset_review` before publishing or delivering assets.
+5. Run `creative_browser_scan_recipe` and `creative_route_discovery_plan`.
+6. Ask for approval before browsing private screens, taking screenshots, or recording video.
+7. Use trusted OpenClaw browser/screenshot/video tools to gather evidence.
+8. Run `creative_scan_session_summary`.
+9. Run `creative_site_intelligence` with page observations and screenshot references.
+10. Run `creative_marketability_audit` to decide whether the product is ready for promotion.
+11. Run `creative_evidence_map` before using strong promotional claims.
+12. Run `creative_capture_checklist` if more shots are needed.
+13. Run `creative_capture_report` after screenshots are captured.
+14. Run `creative_shot_selection` to choose the best shot for each launch asset.
+15. Run `creative_visual_issue_report` when screenshots reveal visual, mobile, copy, or runtime problems.
+16. Run `creative_launch_asset_matrix` to map assets to exact shots and supported claims.
+17. Run `creative_launch_pack`, `creative_image_prompt_pack`, or `creative_video_storyboard`.
+18. Run `creative_export_plan` when the user needs a reusable launch package.
+19. Run `creative_launch_brief`, `creative_prompt_export`, `creative_social_copy_pack`, or `creative_client_handoff` as needed.
+20. Run `creative_asset_review` before publishing or delivering assets.
 
 ## Whole-Site Understanding
 
@@ -58,6 +60,19 @@ Capture evidence from:
 - Dashboard or primary app workflow with safe demo data.
 - Mobile and desktop views.
 - Proof, testimonials, integrations, or docs pages when public.
+
+## Browser Scan
+
+Use Browser Scan v1 to make the full-site scan repeatable.
+
+The normal order is:
+
+1. `creative_browser_scan_recipe`: define desktop, mobile, console, capture, and approved app-flow passes.
+2. `creative_route_discovery_plan`: discover routes from nav, footer, CTAs, sitemap, buttons, feature cards, and approved app menus.
+3. OpenClaw browses and captures evidence with trusted tools.
+4. `creative_scan_session_summary`: record what was visited, captured, blocked, and broken.
+
+If the scan finds a Lovable app that is not launch-ready, use `creative_lovable_readiness_feedback` to create focused Lovable prompts.
 
 ## Trust Layer
 

@@ -13,6 +13,7 @@ Core phrase:
 ## Product Modes
 
 - **Understand**: scan the full website/app and build a product intelligence brief.
+- **Browse**: guide OpenClaw through a repeatable browser inspection protocol.
 - **Capture**: guide screenshots and optional video clips.
 - **Select**: choose the best screenshots for each launch asset.
 - **Audit**: decide whether the product is marketable yet.
@@ -106,3 +107,12 @@ Export Pack v1 turns the workflow into a concrete deliverable:
 - `creative_prompt_export`: packages image and video prompts.
 - `creative_social_copy_pack`: creates platform-specific copy.
 - `creative_client_handoff`: creates an agency/client-ready handoff.
+
+## Version 0.1.4 Upgrade
+
+Browser Scan v1 makes the full-site claim operational:
+
+- `creative_browser_scan_recipe`: repeatable desktop/mobile/app-flow scan protocol.
+- `creative_route_discovery_plan`: route discovery from nav, footer, CTAs, sitemap, and app menus.
+- `creative_scan_session_summary`: scan coverage and blocked-access report.
+- `creative_lovable_readiness_feedback`: Lovable-ready prompts for fixing launch screens.
