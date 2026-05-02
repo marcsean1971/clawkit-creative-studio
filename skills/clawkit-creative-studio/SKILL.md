@@ -129,6 +129,19 @@ Use this order:
 
 The product story is simple: ClawKit for Lovable builds and stabilizes; Creative Studio scans, packages, promotes, and launches.
 
+## QA Demo Pack
+
+Use QA Demo Pack when the user wants to understand, demo, sell, or evaluate Creative Studio.
+
+Use:
+
+- `creative_user_onboarding` before a first run or when the user asks what is possible.
+- `creative_demo_runbook` when creating a sales/demo script.
+- `creative_sample_project_pack` when the user needs sample inputs and outputs before trying a real website.
+- `creative_quality_scorecard` after a run to judge whether the launch pack is trustworthy.
+
+This layer should make the product feel self-explanatory, mature, and easy to present.
+
 ## Lovable Launch Pack
 
 When the user has a Lovable app, use `creative_lovable_launch_pack`.

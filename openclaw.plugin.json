@@ -2,7 +2,7 @@
   "id": "clawkit-creative-studio",
   "name": "ClawKit Creative Studio",
   "description": "Helps OpenClaw scan full websites and apps, understand product flows, and create launch-ready promotional images, scripts, storyboards, and campaign packs.",
-  "version": "0.1.5",
+  "version": "0.1.6",
   "skills": [
     "skills/clawkit-creative-studio"
   ],
@@ -33,6 +33,10 @@
       "creative_lovable_to_launch_workflow",
       "creative_lovable_fix_prompt_pack",
       "creative_cross_plugin_handoff",
+      "creative_demo_runbook",
+      "creative_sample_project_pack",
+      "creative_quality_scorecard",
+      "creative_user_onboarding",
       "creative_lovable_readiness_feedback",
       "creative_lovable_launch_pack",
       "creative_asset_review"

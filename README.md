@@ -59,6 +59,10 @@ The result is a launch pack based on what the product actually shows, not generi
 | `creative_lovable_to_launch_workflow` | Creates the end-to-end workflow from Lovable app to launch assets. |
 | `creative_lovable_fix_prompt_pack` | Converts weak launch screens and marketability issues into Lovable fix prompts. |
 | `creative_cross_plugin_handoff` | Creates a handoff between ClawKit for Lovable and Creative Studio. |
+| `creative_demo_runbook` | Creates a demo script that shows the product from URL to launch pack. |
+| `creative_sample_project_pack` | Creates sample inputs and outputs for a fake SaaS/Lovable app. |
+| `creative_quality_scorecard` | Scores a completed Creative Studio run for trust, quality, and launch readiness. |
+| `creative_user_onboarding` | Creates a friendly guide with example requests, decision paths, and guardrails. |
 | `creative_lovable_readiness_feedback` | Turns scan findings into Lovable prompts for screenshot-ready launch screens. |
 | `creative_lovable_launch_pack` | Turns a Lovable app URL into a launch-ready marketing workflow. |
 | `creative_asset_review` | Checks claims, evidence, privacy, and visual readiness before publishing. |
@@ -133,6 +137,18 @@ Lovable Bridge v1 makes Creative Studio feel like the natural next step after Cl
 `creative_lovable_fix_prompt_pack` turns weak screenshots, missing proof, mobile problems, and placeholder screens into focused Lovable prompts.
 
 `creative_cross_plugin_handoff` makes the division of labor explicit: ClawKit for Lovable builds and stabilizes; Creative Studio scans, packages, promotes, and launches.
+
+## QA Demo Pack
+
+QA Demo Pack v1 makes the plugin easier to trust, explain, and sell.
+
+`creative_demo_runbook` creates a step-by-step demo script for showing the whole workflow from URL to launch pack.
+
+`creative_sample_project_pack` creates sample input and output data so users can understand the product before scanning their own app.
+
+`creative_quality_scorecard` scores a completed run across scan coverage, screenshot quality, claim support, asset matrix completeness, export readiness, and launch safety.
+
+`creative_user_onboarding` explains what the plugin can do and gives users practical first requests.
 
 ## Lovable Extension
 

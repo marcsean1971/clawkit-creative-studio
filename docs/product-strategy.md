@@ -23,6 +23,7 @@ Core phrase:
 - **Review**: check claims, privacy, and marketability.
 - **Export**: turn the work into handoff-ready launch files.
 - **Bridge**: connect ClawKit for Lovable build work to Creative Studio launch work.
+- **Demo**: make the product easy to explain, sell, and evaluate.
 - **Lovable Launch**: turn Lovable apps into launch-ready creative packs.
 
 ## Ideal Customer
@@ -126,3 +127,12 @@ Lovable Bridge v1 makes Creative Studio the natural companion to ClawKit for Lov
 - `creative_lovable_to_launch_workflow`: exact build-to-launch workflow.
 - `creative_lovable_fix_prompt_pack`: focused Lovable prompts for launch-readiness fixes.
 - `creative_cross_plugin_handoff`: explicit handoff between build/stabilize and promote/launch.
+
+## Version 0.1.6 Upgrade
+
+QA Demo Pack v1 makes the product easier to trust and sell:
+
+- `creative_demo_runbook`: step-by-step demo script from URL to launch pack.
+- `creative_sample_project_pack`: sample input/output for a fake SaaS or Lovable app.
+- `creative_quality_scorecard`: QA scoring for a completed Creative Studio run.
+- `creative_user_onboarding`: friendly guide, example requests, and decision paths.

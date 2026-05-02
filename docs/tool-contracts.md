@@ -203,6 +203,30 @@ Input: product identifiers, build status, readiness status, creative status, nex
 
 Output: handoff summary, division of labor between ClawKit for Lovable and Creative Studio, blockers, next owner, and next actions.
 
+## `creative_demo_runbook`
+
+Input: product name, website URL, target audience, demo length, and whether to include Lovable Bridge.
+
+Output: timed demo runbook with script beats, tools to show, proof moments, and presenter notes.
+
+## `creative_sample_project_pack`
+
+Input: product name, product type, and whether to include a Lovable example.
+
+Output: sample website URL, launch goal, route list, fake scan evidence, sample claims, sample asset matrix row, sample social post, and optional Lovable fix example.
+
+## `creative_quality_scorecard`
+
+Input: route coverage, capture counts, claim counts, asset matrix status, export pack status, privacy review status, and human approval status.
+
+Output: overall score, grade, dimension scores, blockers, and next actions.
+
+## `creative_user_onboarding`
+
+Input: user goal, experience level, and whether the user has a Lovable app.
+
+Output: friendly onboarding guide with intro, example requests, decision paths, guardrails, and recommended next action.
+
 ## `creative_lovable_readiness_feedback`
 
 Input: product name, Lovable URL, weak screens, visual issues, missing proof, missing screens, and target launch assets.

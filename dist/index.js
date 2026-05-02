@@ -1131,6 +1131,244 @@ function makeCrossPluginHandoff(params) {
                 : ["Ask the user to approve the next scan, fix, or publication step."],
     };
 }
+function makeDemoRunbook(params) {
+    const productName = params.productName ?? "Demo product";
+    const websiteUrl = params.websiteUrl ?? "https://example.com";
+    const minutes = params.demoLengthMinutes ?? 12;
+    const steps = [
+        {
+            minute: "0-1",
+            title: "Set the promise",
+            script: `Show that ClawKit Creative Studio scans more than a landing page: it understands ${productName}'s product journey and turns it into launch assets.`,
+            tool: "creative_user_onboarding",
+        },
+        {
+            minute: "1-3",
+            title: "Plan the scan",
+            script: `Use ${websiteUrl}, create the browser scan recipe, discover routes, and explain approval gates before capture.`,
+            tool: "creative_browser_scan_recipe + creative_route_discovery_plan",
+        },
+        {
+            minute: "3-5",
+            title: "Summarize evidence",
+            script: "Show visited routes, screenshots, blocked areas, and coverage. Emphasize that the workflow is evidence-based.",
+            tool: "creative_scan_session_summary",
+        },
+        {
+            minute: "5-7",
+            title: "Audit launch readiness",
+            script: "Run marketability audit and evidence map. Show supported claims versus risky claims.",
+            tool: "creative_marketability_audit + creative_evidence_map",
+        },
+        {
+            minute: "7-9",
+            title: "Choose assets",
+            script: "Create capture report, shot selection, visual issue report, and asset matrix.",
+            tool: "creative_capture_report + creative_shot_selection + creative_launch_asset_matrix",
+        },
+        {
+            minute: "9-11",
+            title: "Export the launch pack",
+            script: "Generate launch brief, prompt export, social copy, and client handoff.",
+            tool: "creative_export_plan + creative_launch_brief + creative_client_handoff",
+        },
+        {
+            minute: `${Math.max(11, minutes - 1)}-${minutes}`,
+            title: "Close with QA",
+            script: "Run the quality scorecard and show the next action.",
+            tool: "creative_quality_scorecard",
+        },
+    ];
+    if (params.includeLovableBridge) {
+        steps.splice(2, 0, {
+            minute: "2-4",
+            title: "Lovable bridge moment",
+            script: "Show how weak launch screens become focused Lovable prompts, then hand back to Creative Studio after rescan.",
+            tool: "creative_lovable_project_context + creative_lovable_fix_prompt_pack",
+        });
+    }
+    return {
+        productName,
+        audience: params.audience ?? "founders, Lovable users, agencies, and product marketers",
+        demoLengthMinutes: minutes,
+        runbook: steps,
+        proofMoments: [
+            "Whole-site scan plan, not homepage-only.",
+            "Evidence-backed claims.",
+            "Exact screenshot-to-asset mapping.",
+            "Exportable launch handoff.",
+            "Lovable app polish loop when needed.",
+        ],
+        presenterNotes: [
+            "Keep the demo concrete: URL in, launch pack out.",
+            "Do not overpromise automated video generation; show storyboard and prompt handoff.",
+            "Emphasize that trust is the differentiator: no unsupported claims, no private data.",
+        ],
+    };
+}
+function makeSampleProjectPack(params) {
+    const productName = params.productName ?? "Northstar CRM";
+    const productType = params.productType ?? "AI-assisted CRM for small agencies";
+    const websiteUrl = `https://example.com/${productName.toLowerCase().replace(/[^a-z0-9]+/g, "-")}`;
+    return {
+        productName,
+        productType,
+        sampleInputs: {
+            websiteUrl,
+            goal: "Create a launch pack for Product Hunt, LinkedIn, X/Twitter, and a 30-second demo storyboard.",
+            knownRoutes: ["/", "/features", "/pricing", "/demo", "/dashboard"],
+            targetAudience: "small agency owners who need client follow-up discipline",
+        },
+        sampleScanEvidence: [
+            {
+                url: `${websiteUrl}/`,
+                purpose: "homepage/app entry",
+                visibleFeatures: ["pipeline overview", "AI follow-up suggestions"],
+                primaryCta: "Start free trial",
+                screenshotRef: "screenshots/01-home-desktop.png",
+            },
+            {
+                url: `${websiteUrl}/dashboard`,
+                purpose: "primary feature",
+                visibleFeatures: ["client pipeline", "next-best-action panel", "weekly revenue forecast"],
+                primaryCta: "Review next action",
+                screenshotRef: "screenshots/02-dashboard-demo.png",
+            },
+        ],
+        sampleOutputs: {
+            supportedClaim: "Shows a client pipeline with AI follow-up suggestions.",
+            riskyClaim: "Doubles agency revenue in 30 days.",
+            assetMatrixRow: {
+                asset: "Product Hunt slide 1",
+                screenshotRef: "screenshots/02-dashboard-demo.png",
+                claim: "Keep agency follow-ups moving from one dashboard.",
+            },
+            socialPost: "Launching Northstar CRM: a simple agency pipeline with AI follow-up suggestions, built from real product screens.",
+        },
+        lovableExample: params.includeLovableExample
+            ? {
+                weakScreen: "Mobile dashboard cards overlap at 390px width.",
+                fixPrompt: "Fix the mobile dashboard layout for launch screenshots. Keep the same content, but make cards stack cleanly, keep the CTA visible, and use realistic demo data.",
+            }
+            : null,
+    };
+}
+function makeQualityScorecard(params) {
+    const routeScore = params.routeCoverage === "high" ? 100 : params.routeCoverage === "medium" ? 70 : 35;
+    const captureScore = clampScore((params.approvedCaptureCount ?? 0) * 15 - (params.weakCaptureCount ?? 0) * 15);
+    const claimScore = clampScore((params.supportedClaimCount ?? 0) * 20 - (params.riskyClaimCount ?? 0) * 25);
+    const matrixScore = params.assetMatrixComplete ? 100 : 35;
+    const exportScore = params.exportPackComplete ? 100 : 40;
+    const safetyScore = params.privacyReviewed && params.humanApproved ? 100 : params.privacyReviewed ? 75 : 25;
+    const dimensions = [
+        {
+            name: "Scan coverage",
+            score: routeScore,
+            status: routeScore >= 80 ? "pass" : routeScore >= 60 ? "watch" : "fail",
+            notes: [`Route coverage is ${params.routeCoverage ?? "not supplied"}.`],
+        },
+        {
+            name: "Screenshot quality",
+            score: captureScore,
+            status: captureScore >= 80 ? "pass" : captureScore >= 50 ? "watch" : "fail",
+            notes: [`Approved captures: ${params.approvedCaptureCount ?? 0}. Weak captures: ${params.weakCaptureCount ?? 0}.`],
+        },
+        {
+            name: "Claim support",
+            score: claimScore,
+            status: claimScore >= 80 ? "pass" : claimScore >= 50 ? "watch" : "fail",
+            notes: [`Supported claims: ${params.supportedClaimCount ?? 0}. Risky claims: ${params.riskyClaimCount ?? 0}.`],
+        },
+        {
+            name: "Asset matrix",
+            score: matrixScore,
+            status: matrixScore >= 80 ? "pass" : "fail",
+            notes: [params.assetMatrixComplete ? "Asset matrix is complete." : "Asset matrix is missing or incomplete."],
+        },
+        {
+            name: "Export readiness",
+            score: exportScore,
+            status: exportScore >= 80 ? "pass" : "watch",
+            notes: [params.exportPackComplete ? "Export pack is complete." : "Export pack still needs handoff files."],
+        },
+        {
+            name: "Launch safety",
+            score: safetyScore,
+            status: safetyScore >= 80 ? "pass" : safetyScore >= 60 ? "watch" : "fail",
+            notes: [
+                params.privacyReviewed ? "Privacy review completed." : "Privacy review missing.",
+                params.humanApproved ? "Human approval completed." : "Human approval missing.",
+            ],
+        },
+    ];
+    const overallScore = clampScore(dimensions.reduce((sum, item) => sum + item.score, 0) / dimensions.length);
+    const grade = overallScore >= 85 ? "excellent" : overallScore >= 70 ? "good" : overallScore >= 50 ? "needs-work" : "not-ready";
+    const blockers = dimensions
+        .filter((item) => item.status === "fail")
+        .map((item) => `${item.name}: ${item.notes.join(" ")}`);
+    return {
+        productName: params.productName ?? "Website product",
+        overallScore,
+        grade,
+        dimensions,
+        blockers,
+        nextActions: blockers.length > 0
+            ? [
+                "Fix failed scorecard dimensions before launch.",
+                "Rerun scan/capture/evidence/export steps after fixes.",
+            ]
+            : [
+                "Run final asset review.",
+                "Get user approval before publishing or client delivery.",
+            ],
+    };
+}
+function makeUserOnboarding(params) {
+    const hasLovableApp = params.hasLovableApp ?? false;
+    return {
+        product: "ClawKit Creative Studio",
+        intro: "Give me a website or app URL. I can help OpenClaw scan the product journey, understand what is real, choose screenshots, verify claims, and create launch-ready handoff content.",
+        bestFirstRequests: [
+            "Scan this app and tell me if it is ready to market.",
+            "Create a Product Hunt and social launch pack from this website.",
+            "Map my marketing claims to real screenshots and page evidence.",
+            "Turn these screenshots into a launch asset matrix.",
+            ...(hasLovableApp ? ["Turn my Lovable app into a screenshot-ready launch pack."] : []),
+        ],
+        decisionPaths: [
+            {
+                goal: "I do not know what I need.",
+                firstTool: "creative_starter_guide",
+                next: "Use onboarding, then scan plan.",
+            },
+            {
+                goal: "I need to scan a full site.",
+                firstTool: "creative_browser_scan_recipe",
+                next: "Run route discovery and scan session summary.",
+            },
+            {
+                goal: "I need better Lovable screens.",
+                firstTool: "creative_lovable_project_context",
+                next: "Run Lovable fix prompt pack.",
+            },
+            {
+                goal: "I need assets for launch.",
+                firstTool: "creative_launch_asset_matrix",
+                next: "Run export plan and social copy pack.",
+            },
+        ],
+        guardrails: [
+            "I will not treat unsupported claims as facts.",
+            "I will ask before private screenshots or video capture.",
+            "I will flag weak screens before making polished assets.",
+            "I will keep Lovable app fixes focused and rescan after changes.",
+        ],
+        recommendedNextAction: params.userGoal ?? "Share the app or website URL and the launch goal.",
+        modeHint: params.experienceLevel
+            ? `Use ${params.experienceLevel} language and examples.`
+            : "Keep the first run guided and practical.",
+    };
+}
 function makeLaunchPack(params) {
     const intelligence = params.intelligence;
     const firstFeature = intelligence.visibleFeatures[0] ?? "the product's main workflow";
@@ -1752,6 +1990,76 @@ export default definePluginEntry({
             }),
             async execute(_id, params) {
                 return jsonText(makeCrossPluginHandoff(params));
+            },
+        });
+        api.registerTool({
+            name: "creative_demo_runbook",
+            label: "Create Demo Runbook",
+            description: "Create a step-by-step demo script that shows ClawKit Creative Studio from URL to launch pack.",
+            parameters: Type.Object({
+                productName: Type.Optional(Type.String()),
+                websiteUrl: Type.Optional(Type.String()),
+                audience: Type.Optional(Type.String()),
+                demoLengthMinutes: Type.Optional(Type.Number()),
+                includeLovableBridge: Type.Optional(Type.Boolean()),
+            }),
+            async execute(_id, params) {
+                return jsonText(makeDemoRunbook(params));
+            },
+        });
+        api.registerTool({
+            name: "creative_sample_project_pack",
+            label: "Create Sample Project Pack",
+            description: "Create a sample input/output pack for demonstrating Creative Studio before users scan their own app.",
+            parameters: Type.Object({
+                productName: Type.Optional(Type.String()),
+                productType: Type.Optional(Type.String()),
+                includeLovableExample: Type.Optional(Type.Boolean()),
+            }),
+            async execute(_id, params) {
+                return jsonText(makeSampleProjectPack(params));
+            },
+        });
+        api.registerTool({
+            name: "creative_quality_scorecard",
+            label: "Score Creative Studio Run",
+            description: "Score a completed Creative Studio workflow for scan coverage, screenshot quality, claim support, asset matrix completeness, export readiness, and launch safety.",
+            parameters: Type.Object({
+                productName: Type.Optional(Type.String()),
+                routeCoverage: Type.Optional(Type.Union([
+                    Type.Literal("low"),
+                    Type.Literal("medium"),
+                    Type.Literal("high"),
+                ])),
+                approvedCaptureCount: Type.Optional(Type.Number()),
+                weakCaptureCount: Type.Optional(Type.Number()),
+                supportedClaimCount: Type.Optional(Type.Number()),
+                riskyClaimCount: Type.Optional(Type.Number()),
+                assetMatrixComplete: Type.Optional(Type.Boolean()),
+                exportPackComplete: Type.Optional(Type.Boolean()),
+                privacyReviewed: Type.Optional(Type.Boolean()),
+                humanApproved: Type.Optional(Type.Boolean()),
+            }),
+            async execute(_id, params) {
+                return jsonText(makeQualityScorecard(params));
+            },
+        });
+        api.registerTool({
+            name: "creative_user_onboarding",
+            label: "Create User Onboarding",
+            description: "Create a friendly guide explaining what Creative Studio can do, example requests, decision paths, and guardrails.",
+            parameters: Type.Object({
+                userGoal: Type.Optional(Type.String()),
+                experienceLevel: Type.Optional(Type.Union([
+                    Type.Literal("beginner"),
+                    Type.Literal("builder"),
+                    Type.Literal("agency"),
+                    Type.Literal("marketer"),
+                ])),
+                hasLovableApp: Type.Optional(Type.Boolean()),
+            }),
+            async execute(_id, params) {
+                return jsonText(makeUserOnboarding(params));
             },
         });
         api.registerTool({

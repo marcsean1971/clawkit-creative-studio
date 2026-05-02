@@ -33,9 +33,9 @@ clawhub package publish MarcSean1971/clawkit-creative-studio@main \
   --family code-plugin \
   --name @clawkit/clawkit-creative-studio \
   --display-name "ClawKit Creative Studio" \
-  --version 0.1.5 \
+  --version 0.1.6 \
   --source-repo MarcSean1971/clawkit-creative-studio \
   --source-commit "$(git rev-parse HEAD)" \
   --source-ref main \
-  --changelog "Add Lovable Bridge workflow and cross-plugin handoff"
+  --changelog "Add QA Demo Pack onboarding and scorecard tools"
 ```
