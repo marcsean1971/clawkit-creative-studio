@@ -21,7 +21,7 @@ function normalizeUrl(url) {
 }
 function starterGuide(params) {
     return {
-        product: "ClawKit Creative Studio",
+        product: "ClawKit Creative Studio for Lovable",
         promise: "OpenClaw can walk a complete website or app like a user, capture the important screens, understand the product, and turn that evidence into launch-ready promotional assets.",
         bestFor: [
             "SaaS apps, Lovable apps, directories, marketplaces, dashboards, portals, AI tools, mobile-web products, and founder launches.",
@@ -53,6 +53,97 @@ function starterGuide(params) {
         platformHint: params.platform
             ? `Optimize the workflow for ${params.platform}.`
             : "If the app was built in Lovable, use the Lovable Launch Pack workflow.",
+    };
+}
+function makeCreativeStudioBrain(params) {
+    const productName = params.productName ?? "Lovable app";
+    const goal = (params.userGoal ?? "").toLowerCase();
+    const hasUrl = Boolean(params.websiteUrl);
+    const wantsAssets = Boolean(params.wantsImages || params.wantsVideo || params.wantsSocialCopy || goal.includes("image") || goal.includes("video") || goal.includes("launch"));
+    const mode = !hasUrl
+        ? "orient"
+        : params.hasPrivateDataRisk || params.hasUnsupportedClaims
+            ? "review-assets"
+            : params.needsLovableFixes || params.hasWeakScreens
+                ? "fix-before-launch"
+                : !params.hasScanEvidence || !params.hasScreenshots
+                    ? "scan"
+                    : !params.hasProductAudit
+                        ? "audit"
+                        : wantsAssets && !params.hasAssetMatrix
+                            ? "create-assets"
+                            : params.hasLaunchPack || params.wantsClientReport
+                                ? "handoff"
+                                : "create-assets";
+    const recommendedToolOrder = [
+        "creative_studio_brain",
+        ...(mode === "orient" ? ["creative_user_onboarding", "creative_starter_guide"] : []),
+        ...(mode === "scan" ? ["creative_scan_plan", "creative_browser_scan_recipe", "creative_route_discovery_plan", "OpenClaw browser/screenshot tools", "creative_scan_session_summary", "creative_site_intelligence"] : []),
+        ...(mode === "audit" ? ["creative_marketability_audit", "creative_product_audit", "creative_evidence_map"] : []),
+        ...(mode === "fix-before-launch" ? ["creative_visual_issue_report", "creative_lovable_readiness_feedback", "creative_lovable_fix_prompt_pack", "ClawKit for Lovable handoff"] : []),
+        ...(mode === "create-assets" ? ["creative_capture_report", "creative_shot_selection", "creative_launch_asset_matrix", "creative_launch_pack", ...(params.wantsImages ? ["creative_image_prompt_pack"] : []), ...(params.wantsVideo ? ["creative_video_storyboard"] : []), ...(params.wantsSocialCopy ? ["creative_social_copy_pack"] : [])] : []),
+        ...(mode === "review-assets" ? ["creative_evidence_map", "creative_asset_review"] : []),
+        ...(mode === "handoff" ? ["creative_launch_brief", "creative_prompt_export", "creative_client_handoff", ...(params.wantsClientReport ? ["creative_agency_report"] : [])] : []),
+    ];
+    return {
+        productName,
+        mode,
+        confidence: hasUrl && (params.hasScanEvidence || mode === "scan") ? "high" : hasUrl ? "medium" : "low",
+        userFacingSummary: mode === "orient"
+            ? "I need the Lovable.dev app, website, preview, or deployed URL first. Then I can plan the scan and launch asset workflow."
+            : mode === "scan"
+                ? "I will scan the full product, not just the landing page, and gather screenshot/video evidence before creating promotional material."
+                : mode === "audit"
+                    ? "I will decide whether the product is actually marketable yet before creating public launch assets."
+                    : mode === "fix-before-launch"
+                        ? "The app needs screenshot-ready fixes before promotion. I will turn weak screens into Lovable.dev fix prompts and hand them to ClawKit for Lovable."
+                        : mode === "review-assets"
+                            ? "I will review claims, privacy risk, and visual readiness before anything is published."
+                            : mode === "handoff"
+                                ? "I will package the launch brief, prompts, copy, approvals, and client-ready handoff."
+                                : "I will create evidence-based launch assets from the approved product screenshots and scan findings.",
+        nextAction: mode === "orient"
+            ? "Ask for the app URL and desired asset type."
+            : mode === "scan"
+                ? "Run the scan plan and browser recipe, then capture approved screenshots."
+                : mode === "audit"
+                    ? "Run marketability and product audits before generating assets."
+                    : mode === "fix-before-launch"
+                        ? "Create Lovable.dev fix prompts and route build/repair work to ClawKit for Lovable."
+                        : mode === "review-assets"
+                            ? "Run claim and privacy review before public use."
+                            : mode === "handoff"
+                                ? "Create the launch brief and client handoff."
+                                : "Build the asset matrix, image prompt pack, video storyboard, and social copy as requested.",
+        why: "ClawKit Creative Studio for Lovable is the promotion brain. It should understand the product from evidence before producing images, videos, copy, or client reports.",
+        recommendedToolOrder,
+        askUserFor: [
+            ...(!hasUrl ? ["Website, deployed app, preview, or Lovable.dev URL."] : []),
+            ...(!params.targetChannel ? ["Target launch channel: Product Hunt, LinkedIn, X, website hero, ads, client report, or all."] : []),
+            ...(!params.hasScreenshots && mode !== "orient" ? ["Approval to browse and capture screenshots or short clips."] : []),
+            ...(params.hasPrivateDataRisk ? ["Confirmation that private data has been removed or approved for capture."] : []),
+        ],
+        useCreativeStudioFor: [
+            "Full-site/app scan planning, route discovery, capture strategy, product understanding, marketability audit, asset matrix, image prompts, video storyboard, social copy, and client handoff.",
+            "Evidence-backed marketing claims based on what is visible in the app.",
+        ],
+        useClawKitForLovableFor: [
+            "Building, rescuing, refactoring, debugging, GitHub handoff, and making Lovable.dev screens screenshot-ready before promotion.",
+            "Fixing weak or broken launch screens before Creative Studio creates public assets.",
+        ],
+        evidenceNeeded: [
+            "App or website URL.",
+            "Approved screenshots or video notes.",
+            "Product intelligence from visited pages and flows.",
+            "Evidence map for claims.",
+            "Human approval before public publishing.",
+        ],
+        stopConditions: [
+            "Stop if private data, secrets, customer data, or admin screens appear without approval.",
+            "Stop if claims are unsupported by evidence.",
+            "Stop if the app is visually broken or placeholder-heavy; route fixes to ClawKit for Lovable first.",
+            "Stop before publishing or sending client assets without review.",
+        ],
     };
 }
 function makeScanPlan(params) {
@@ -1114,7 +1205,7 @@ function makeAgencyReport(params) {
             `# ${productName} Launch Readiness Report`,
             "",
             `Client: ${params.clientName ?? "not supplied"}`,
-            `Prepared by: ${params.preparedBy ?? params.agencyName ?? "ClawKit Creative Studio"}`,
+            `Prepared by: ${params.preparedBy ?? params.agencyName ?? "ClawKit Creative Studio for Lovable"}`,
             `Date: ${params.reportDate ?? "not supplied"}`,
             `Website: ${websiteUrl}`,
             `Launch window: ${params.launchWindow ?? "not supplied"}`,
@@ -1373,7 +1464,7 @@ function makeCrossPluginHandoff(params) {
                 "Build, rescue, refactor, verify, GitHub handoff, code fixes, and visible result checks.",
                 "Fix runtime/build problems and structural app issues before launch capture.",
             ],
-            "ClawKit Creative Studio": [
+            "ClawKit Creative Studio for Lovable": [
                 "Full-site scan, screenshot inventory, marketability audit, claim evidence, creative prompts, export pack, and launch handoff.",
                 "Turn stable app screens into promotional assets.",
             ],
@@ -1403,7 +1494,7 @@ function makeDemoRunbook(params) {
         {
             minute: "0-1",
             title: "Set the promise",
-            script: `Show that ClawKit Creative Studio scans more than a landing page: it understands ${productName}'s product journey and turns it into launch assets.`,
+            script: `Show that ClawKit Creative Studio for Lovable scans more than a landing page: it understands ${productName}'s product journey and turns it into launch assets.`,
             tool: "creative_user_onboarding",
         },
         {
@@ -1590,7 +1681,7 @@ function makeQualityScorecard(params) {
 function makeUserOnboarding(params) {
     const hasLovableApp = params.hasLovableApp ?? false;
     return {
-        product: "ClawKit Creative Studio",
+        product: "ClawKit Creative Studio for Lovable",
         intro: "Give me a website or app URL. I can help OpenClaw scan the product journey, understand what is real, choose screenshots, verify claims, and create launch-ready handoff content.",
         bestFirstRequests: [
             "Scan this app and tell me if it is ready to market.",
@@ -1765,7 +1856,7 @@ function makeLovableLaunchPack(params) {
         productName: params.productName ?? "Lovable app",
         lovableUrl: url,
         githubRepoUrl: params.githubRepoUrl ?? null,
-        positioning: "Lovable builds the app. ClawKit Creative Studio scans the full app and turns it into launch-ready marketing.",
+        positioning: "Lovable builds the app. ClawKit Creative Studio for Lovable scans the full app and turns it into launch-ready marketing.",
         workflow: [
             "Open the Lovable preview or deployed URL.",
             "Capture homepage/app shell, mobile view, primary feature screens, onboarding, pricing/CTA, and any proof pages.",
@@ -1821,13 +1912,42 @@ function reviewAsset(params) {
 }
 export default definePluginEntry({
     id: "clawkit-creative-studio",
-    name: "ClawKit Creative Studio",
+    name: "ClawKit Creative Studio for Lovable",
     description: "Helps OpenClaw understand full websites and apps, then create launch-ready promotional images, copy, and video storyboards.",
     register(api) {
         api.registerTool({
+            name: "creative_studio_brain",
+            label: "Run Creative Studio Brain",
+            description: "Choose the next ClawKit Creative Studio for Lovable workflow: orient user, scan, audit, fix before launch, create assets, review assets, or hand off.",
+            parameters: Type.Object({
+                productName: Type.Optional(Type.String()),
+                websiteUrl: Type.Optional(Type.String()),
+                userGoal: Type.Optional(Type.String()),
+                isLovableApp: Type.Optional(Type.Boolean()),
+                hasScanEvidence: Type.Optional(Type.Boolean()),
+                hasScreenshots: Type.Optional(Type.Boolean()),
+                hasVideoEvidence: Type.Optional(Type.Boolean()),
+                hasProductAudit: Type.Optional(Type.Boolean()),
+                hasAssetMatrix: Type.Optional(Type.Boolean()),
+                hasLaunchPack: Type.Optional(Type.Boolean()),
+                hasUnsupportedClaims: Type.Optional(Type.Boolean()),
+                hasPrivateDataRisk: Type.Optional(Type.Boolean()),
+                hasWeakScreens: Type.Optional(Type.Boolean()),
+                wantsImages: Type.Optional(Type.Boolean()),
+                wantsVideo: Type.Optional(Type.Boolean()),
+                wantsSocialCopy: Type.Optional(Type.Boolean()),
+                wantsClientReport: Type.Optional(Type.Boolean()),
+                needsLovableFixes: Type.Optional(Type.Boolean()),
+                targetChannel: Type.Optional(Type.String()),
+            }),
+            async execute(_id, params) {
+                return jsonText(makeCreativeStudioBrain(params));
+            },
+        });
+        api.registerTool({
             name: "creative_starter_guide",
             label: "Creative Studio Guide",
-            description: "Explain how ClawKit Creative Studio uses OpenClaw to scan full websites/apps and create promotional asset packs.",
+            description: "Explain how ClawKit Creative Studio for Lovable uses OpenClaw to scan full websites/apps and create promotional asset packs.",
             parameters: Type.Object({
                 userGoal: Type.Optional(Type.String()),
                 platform: Type.Optional(Type.String()),
@@ -2305,7 +2425,7 @@ export default definePluginEntry({
         api.registerTool({
             name: "creative_cross_plugin_handoff",
             label: "Create Cross-Plugin Handoff",
-            description: "Create a handoff between ClawKit for Lovable and ClawKit Creative Studio, with next owner, blockers, and division of labor.",
+            description: "Create a handoff between ClawKit for Lovable and ClawKit Creative Studio for Lovable, with next owner, blockers, and division of labor.",
             parameters: Type.Object({
                 productName: Type.Optional(Type.String()),
                 lovableUrl: Type.Optional(Type.String()),
@@ -2327,7 +2447,7 @@ export default definePluginEntry({
         api.registerTool({
             name: "creative_demo_runbook",
             label: "Create Demo Runbook",
-            description: "Create a step-by-step demo script that shows ClawKit Creative Studio from URL to launch pack.",
+            description: "Create a step-by-step demo script that shows ClawKit Creative Studio for Lovable from URL to launch pack.",
             parameters: Type.Object({
                 productName: Type.Optional(Type.String()),
                 websiteUrl: Type.Optional(Type.String()),

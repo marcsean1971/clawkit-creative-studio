@@ -3,9 +3,14 @@ name: clawkit-creative-studio
 description: Use OpenClaw to scan full websites or apps, understand product flows, capture evidence, and create launch-ready promotional images, video storyboards, copy, and campaign packs.
 ---
 
-# ClawKit Creative Studio
+# ClawKit Creative Studio for Lovable
 
-ClawKit Creative Studio turns a real website or app into evidence-based promotional material.
+ClawKit Creative Studio for Lovable turns a real Lovable.dev website or app into evidence-based promotional material.
+
+Use `creative_studio_brain` as the default first move. It is the creative/product-launch brain and is separate from ClawKit for Lovable's `lovable_brain`.
+
+- ClawKit for Lovable: build, rescue, verify, refactor, GitHub handoff.
+- ClawKit Creative Studio for Lovable: scan, understand, package, promote, review, launch.
 
 The product promise is:
 
@@ -189,7 +194,7 @@ When the user has a Lovable app, use `creative_lovable_launch_pack`.
 
 Frame it as:
 
-> Lovable builds the app. ClawKit Creative Studio launches it.
+> Lovable builds the app. ClawKit Creative Studio for Lovable launches it.
 
 The workflow should identify whether the Lovable app is visually ready for marketing. If the app has placeholder data, broken routes, weak mobile layout, unclear CTAs, or unfinished screens, recommend fixes before making final promotional assets.
 

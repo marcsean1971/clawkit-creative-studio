@@ -2,9 +2,9 @@
 
 ## Positioning
 
-ClawKit Creative Studio is the full-site product understanding layer for launch assets.
+ClawKit Creative Studio for Lovable is the full-site product understanding layer for launch assets.
 
-Most tools scan a landing page or ask for a short prompt. ClawKit Creative Studio uses OpenClaw to inspect the whole product journey first, then creates promotional material from real product evidence.
+Most tools scan a landing page or ask for a short prompt. ClawKit Creative Studio for Lovable uses OpenClaw to inspect the whole product journey first, then creates promotional material from real product evidence.
 
 Core phrase:
 
@@ -61,7 +61,7 @@ The MVP is successful when a user can:
 This plugin should become the natural post-build companion to ClawKit for Lovable.
 
 - ClawKit for Lovable helps build, rescue, refactor, verify, and ship.
-- ClawKit Creative Studio helps package, promote, and launch.
+- ClawKit Creative Studio for Lovable helps package, promote, and launch.
 
 Search terms to support:
 

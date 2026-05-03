@@ -22,7 +22,7 @@ Expected result: no matches.
 ```bash
 git init
 git add .
-git commit -m "Initial ClawKit Creative Studio release"
+git commit -m "Initial ClawKit Creative Studio for Lovable release"
 gh repo create MarcSean1971/clawkit-creative-studio --public --source=. --remote=origin --push
 ```
 
@@ -32,10 +32,10 @@ gh repo create MarcSean1971/clawkit-creative-studio --public --source=. --remote
 clawhub package publish MarcSean1971/clawkit-creative-studio@main \
   --family code-plugin \
   --name @clawkit/clawkit-creative-studio \
-  --display-name "ClawKit Creative Studio" \
-  --version 0.1.8 \
+  --display-name "ClawKit Creative Studio for Lovable" \
+  --version 0.1.9 \
   --source-repo MarcSean1971/clawkit-creative-studio \
   --source-commit "$(git rev-parse HEAD)" \
   --source-ref main \
-  --changelog "Add Agency Report Mode for client-ready launch reports"
+  --changelog "Rename to ClawKit Creative Studio for Lovable and add Creative Studio Brain"
 ```

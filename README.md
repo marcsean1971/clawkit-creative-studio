@@ -1,14 +1,23 @@
-# ClawKit Creative Studio
+# ClawKit Creative Studio for Lovable
 
-ClawKit Creative Studio is an OpenClaw plugin for turning a real website or app into launch-ready promotional material.
+ClawKit Creative Studio for Lovable is an OpenClaw plugin for turning a real website or app into launch-ready promotional material.
 
 The core idea is simple:
 
 > Do not just scan a landing page. Let OpenClaw walk the whole product, understand the screens and flows, then create marketing assets from real evidence.
 
-Most promotional generators start from a homepage, a URL, or a short prompt. ClawKit Creative Studio is designed for deeper product understanding: homepage, feature pages, pricing, onboarding, dashboards, mobile views, proof pages, and approved logged-in flows.
+Most promotional generators start from a homepage, a URL, or a short prompt. ClawKit Creative Studio for Lovable is designed for deeper product understanding: homepage, feature pages, pricing, onboarding, dashboards, mobile views, proof pages, and approved logged-in flows.
 
 This is an early public release. It is useful now, and it will improve continuously. Constructive feedback is welcome, especially examples where a website scan missed an important product flow or where a generated asset needed better evidence.
+
+## Creative Studio Brain
+
+`creative_studio_brain` is the separate brain for this product. It is not the same as the ClawKit for Lovable brain.
+
+- **ClawKit for Lovable** builds, rescues, verifies, refactors, and prepares Lovable.dev apps.
+- **ClawKit Creative Studio for Lovable** scans the finished or preview app, understands the product journey, and creates promotional assets from evidence.
+
+The Creative Studio Brain decides whether OpenClaw should orient the user, scan the app, audit marketability, route weak screens back to ClawKit for Lovable, create assets, review claims/privacy, or prepare a client handoff.
 
 ## What It Does
 
@@ -26,7 +35,7 @@ This is an early public release. It is useful now, and it will improve continuou
 
 ## Why It Is Different
 
-ClawKit Creative Studio is not a simple URL-to-video tool. It is a product-understanding workflow.
+ClawKit Creative Studio for Lovable is not a simple URL-to-video tool. It is a product-understanding workflow.
 
 OpenClaw can browse through a complete website or app, inspect multiple pages, compare desktop and mobile views, capture evidence, and reason about user journeys. The plugin turns that ability into a repeatable creative process.
 
@@ -36,6 +45,7 @@ The result is a launch pack based on what the product actually shows, not generi
 
 | Tool | Purpose |
 | --- | --- |
+| `creative_studio_brain` | Chooses the next Creative Studio workflow: orient, scan, audit, fix before launch, create assets, review assets, or hand off. |
 | `creative_starter_guide` | Explains the workflow and user options. |
 | `creative_scan_plan` | Creates the full-site scan plan, evidence list, approvals, and stop conditions. |
 | `creative_browser_scan_recipe` | Creates a repeatable OpenClaw browser inspection protocol. |
@@ -168,7 +178,7 @@ Use this after `creative_product_audit`, `creative_capture_report`, and `creativ
 
 ## Lovable Extension
 
-Lovable builds the app. ClawKit Creative Studio launches it.
+Lovable builds the app. ClawKit Creative Studio for Lovable launches it.
 
 For Lovable apps, use `creative_lovable_launch_pack` first. It creates a workflow for scanning the Lovable preview or deployed app, capturing the best screens, identifying weak launch moments, and producing:
 
@@ -184,7 +194,7 @@ For Lovable apps, use `creative_lovable_launch_pack` first. It creates a workflo
 This pairs naturally with ClawKit for Lovable:
 
 - ClawKit for Lovable: build, rescue, refactor, verify, ship.
-- ClawKit Creative Studio: understand, package, promote, launch.
+- ClawKit Creative Studio for Lovable: understand, package, promote, launch.
 
 ## Important Guardrails
 

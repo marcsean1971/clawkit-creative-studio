@@ -1,7 +1,7 @@
 {
   "name": "@clawkit/clawkit-creative-studio",
-  "version": "0.1.8",
-  "description": "ClawKit Creative Studio helps OpenClaw understand full websites and apps, then create launch-ready promotional briefs, image prompts, and video storyboards.",
+  "version": "0.1.9",
+  "description": "ClawKit Creative Studio for Lovable helps OpenClaw understand full websites and apps, then create launch-ready promotional briefs, image prompts, and video storyboards.",
   "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",

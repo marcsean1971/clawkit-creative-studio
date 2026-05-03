@@ -1,5 +1,21 @@
 # Tool Contracts
 
+## `creative_studio_brain`
+
+Input: product name, website or Lovable.dev URL, user goal, scan/evidence status, asset goals, weak-screen flags, privacy/claim risks, and target launch channel.
+
+Output: Creative Studio workflow decision with:
+
+- Mode: orient, scan, audit, fix-before-launch, create-assets, review-assets, or handoff.
+- User-facing summary and next action.
+- Recommended tool order.
+- Minimum facts to ask the user for.
+- Clear division between Creative Studio work and ClawKit for Lovable work.
+- Evidence needed before producing public assets.
+- Stop conditions for private data, unsupported claims, broken screens, and unapproved publishing.
+
+Use it as the default first tool for ClawKit Creative Studio for Lovable. This brain is separate from ClawKit for Lovable's `lovable_brain`: Creative Studio handles product scanning, promotional assets, launch packs, claim review, and handoff; ClawKit for Lovable handles build, rescue, verification, refactoring, GitHub, and code fixes.
+
 ## `creative_starter_guide`
 
 Input: optional user goal and platform.
