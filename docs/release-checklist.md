@@ -33,9 +33,9 @@ clawhub package publish MarcSean1971/clawkit-creative-studio@main \
   --family code-plugin \
   --name @clawkit/clawkit-creative-studio \
   --display-name "ClawKit Creative Studio for Lovable" \
-  --version 0.1.9 \
+  --version 0.1.10 \
   --source-repo MarcSean1971/clawkit-creative-studio \
   --source-commit "$(git rev-parse HEAD)" \
   --source-ref main \
-  --changelog "Rename to ClawKit Creative Studio for Lovable and add Creative Studio Brain"
+  --changelog "Add Launch Command Center, Product Hunt launch button, and Launch Room Export"
 ```

@@ -8,6 +8,7 @@ Output: Creative Studio workflow decision with:
 
 - Mode: orient, scan, audit, fix-before-launch, create-assets, review-assets, or handoff.
 - User-facing summary and next action.
+- Embedded workflow state for source of truth, product status, capture status, launch risk, blocker, and missing facts.
 - Recommended tool order.
 - Minimum facts to ask the user for.
 - Clear division between Creative Studio work and ClawKit for Lovable work.
@@ -15,6 +16,68 @@ Output: Creative Studio workflow decision with:
 - Stop conditions for private data, unsupported claims, broken screens, and unapproved publishing.
 
 Use it as the default first tool for ClawKit Creative Studio for Lovable. This brain is separate from ClawKit for Lovable's `lovable_brain`: Creative Studio handles product scanning, promotional assets, launch packs, claim review, and handoff; ClawKit for Lovable handles build, rescue, verification, refactoring, GitHub, and code fixes.
+
+## `creative_launch_command_center`
+
+Input: product name, website or Lovable.dev URL, launch goal, target channel, source hints, workflow status flags, Product Hunt fields, capture/assets/audit/evidence flags, strongest and weak screens, missing screens, supported and risky claims, and known facts.
+
+Output: top-level launch cockpit with:
+
+- Launch readiness score and status.
+- Workflow state and next action plan.
+- Product Hunt button payload.
+- Command buttons for scan, Lovable fixes, launch pack creation, Product Hunt handoff, and launch-room export.
+- Readiness panels for scan, captures, audit, assets, claim safety, and Product Hunt.
+- Best launch assets, blockers, fixes before launch, launch-room files, and recommended tool order.
+
+Use it when the user wants the “wow” experience: one place that explains what is ready, what is blocked, what button to press next, and what files make up the launch room.
+
+## `creative_launch_room_export`
+
+Input: product name, website URL, package name, launch goal, target channel, optional command center, include flags, Product Hunt fields, claims, screen lists, fixes, social copy, gallery prompts, video storyboard scenes, client notes, workflow status flags, and Product Hunt write-access flag.
+
+Output: complete launch-room export with:
+
+- Command center JSON.
+- Product Hunt draft.
+- Social copy.
+- Gallery prompts.
+- Demo storyboard.
+- Evidence map.
+- Asset matrix.
+- Launch checklist.
+- Client handoff.
+- Lovable fix prompts when blockers or weak/missing screens exist.
+- Next actions and approval gates.
+
+Use it after `creative_launch_command_center` when the user wants an operational package, not just a plan.
+
+## `creative_workflow_state`
+
+Input: product name, website or Lovable.dev URL, user goal, source hints, scan/capture/audit/asset status, private-data and unsupported-claim risks, weak-screen flags, target launch channel, and known facts.
+
+Output: simple Creative Studio state with:
+
+- Mode: orient, scan, audit, fix-before-launch, create-assets, review-assets, or handoff.
+- Source of truth: Lovable preview, deployed app, GitHub, screenshot pack, or unknown.
+- Product status, capture status, and launch risk.
+- Current blocker and next best action.
+- Known facts and missing info.
+
+Use it when a session resumes, facts are scattered, or the user asks where the launch workflow stands.
+
+## `creative_next_action_plan`
+
+Input: requested outcome, optional workflow state, product URL, Lovable/GitHub/source hints, scan/capture/audit/asset status, private-data and unsupported-claim risks, weak-screen flags, and target launch channel.
+
+Output: next safe action plan with:
+
+- Recommended action: ask user, scan product, audit readiness, fix screens, create assets, review assets, or prepare handoff.
+- Reason and immediate steps.
+- Division between Creative Studio and ClawKit for Lovable.
+- Required evidence and stop conditions.
+
+Use it before choosing the next operational tool so users get the same guided “what happens next?” experience as ClawKit for Lovable.
 
 ## `creative_starter_guide`
 
@@ -280,6 +343,19 @@ Output: overall score, grade, dimension scores, blockers, and next actions.
 Input: user goal, experience level, and whether the user has a Lovable app.
 
 Output: friendly onboarding guide with intro, example requests, decision paths, guardrails, and recommended next action.
+
+## `creative_product_hunt_launch_button`
+
+Input: product name, product URL, optional tagline, description, maker comment, topics, gallery assets, video URL, launch date, approval flags, evidence flags, visual-risk flags, and whether approved Product Hunt write access exists.
+
+Output: guarded Product Hunt launch-button payload with:
+
+- Mode: manual-submit, api-ready, or blocked.
+- Button label and Product Hunt submit URL.
+- Product Hunt launch draft fields.
+- Preflight checks, blockers, API requirements, and user instructions.
+
+Use this after `creative_asset_review` and `creative_launch_asset_matrix`. The safe default is a one-click human-reviewed Product Hunt submit handoff. API-ready mode requires Product Hunt write scope, user OAuth, secure server-side token handling, and a final approval gate.
 
 ## `creative_lovable_readiness_feedback`
 

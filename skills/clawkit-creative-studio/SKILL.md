@@ -9,6 +9,12 @@ ClawKit Creative Studio for Lovable turns a real Lovable.dev website or app into
 
 Use `creative_studio_brain` as the default first move. It is the creative/product-launch brain and is separate from ClawKit for Lovable's `lovable_brain`.
 
+Use `creative_launch_command_center` when the user wants the full launch cockpit, Product Hunt readiness, launch blockers, next button, or a launch-room export plan. This is the “wow” layer: it should make Creative Studio feel like an operator that knows what is ready, what is blocked, and what to press next.
+
+Use `creative_launch_room_export` when the user wants the complete operational package. This should turn the command center into usable files: Product Hunt draft, social copy, gallery prompts, demo storyboard, evidence map, asset matrix, checklist, client handoff, and Lovable fix prompts when needed.
+
+Use `creative_workflow_state` when the facts are scattered, a session resumes, or the user asks where the launch workflow stands. Use `creative_next_action_plan` before choosing between scanning, auditing, fixing Lovable screens, creating assets, reviewing assets, or preparing a handoff. The user should feel the same guided experience they get from ClawKit for Lovable: they describe the outcome, and OpenClaw chooses the next safe step.
+
 - ClawKit for Lovable: build, rescue, verify, refactor, GitHub handoff.
 - ClawKit Creative Studio for Lovable: scan, understand, package, promote, review, launch.
 
@@ -24,30 +30,38 @@ Use OpenClaw's browser, screenshot, video, image-generation, and writing capabil
 
 Never invent product claims. If a claim is not visible in the captured website/app evidence and has not been confirmed by the user, mark it as unverified.
 
+For Product Hunt, use `creative_product_hunt_launch_button` only after launch assets and claims have been reviewed. Treat Product Hunt publishing as approval-gated: the safe default is a button that opens the Product Hunt submit flow and provides a complete human-reviewed draft. Only describe direct API submission as available when the user has approved Product Hunt write scope, user OAuth, secure server-side token handling, and a final human approval gate.
+
 ## Standard Workflow
 
 1. Ask for the website, app, preview, or Lovable URL.
 2. Ask what the user wants: launch pack, Product Hunt gallery, social assets, video storyboard, promotional images, or marketability review.
-3. Run `creative_starter_guide` when the user needs orientation.
-4. Run `creative_scan_plan`.
-5. Run `creative_browser_scan_recipe` and `creative_route_discovery_plan`.
-6. Ask for approval before browsing private screens, taking screenshots, or recording video.
-7. Use trusted OpenClaw browser/screenshot/video tools to gather evidence.
-8. Run `creative_scan_session_summary`.
-9. Run `creative_site_intelligence` with page observations and screenshot references.
-10. Run `creative_marketability_audit` to decide whether the product is ready for promotion.
-11. Run `creative_product_audit` before generating final assets.
-12. Run `creative_evidence_map` before using strong promotional claims.
-13. Run `creative_capture_checklist` if more shots are needed.
-14. Run `creative_capture_report` after screenshots are captured.
-15. Run `creative_shot_selection` to choose the best shot for each launch asset.
-16. Run `creative_visual_issue_report` when screenshots reveal visual, mobile, copy, or runtime problems.
-17. Run `creative_launch_asset_matrix` to map assets to exact shots and supported claims.
-18. Run `creative_launch_pack`, `creative_image_prompt_pack`, or `creative_video_storyboard`.
-19. Run `creative_export_plan` when the user needs a reusable launch package.
-20. Run `creative_launch_brief`, `creative_prompt_export`, `creative_social_copy_pack`, or `creative_client_handoff` as needed.
-21. Run `creative_agency_report` when the user needs a client-ready commercial deliverable.
-22. Run `creative_asset_review` before publishing or delivering assets.
+3. Run `creative_launch_command_center` when the user wants the full launch cockpit or Product Hunt-ready launch room.
+4. Run `creative_studio_brain` to choose the mode, next action, missing facts, evidence gates, and stop conditions.
+5. Run `creative_workflow_state` when project facts need to be normalized before action.
+6. Run `creative_next_action_plan` before choosing the next operational tool.
+7. Run `creative_starter_guide` when the user needs orientation.
+8. Run `creative_scan_plan`.
+9. Run `creative_browser_scan_recipe` and `creative_route_discovery_plan`.
+10. Ask for approval before browsing private screens, taking screenshots, or recording video.
+11. Use trusted OpenClaw browser/screenshot/video tools to gather evidence.
+12. Run `creative_scan_session_summary`.
+13. Run `creative_site_intelligence` with page observations and screenshot references.
+14. Run `creative_marketability_audit` to decide whether the product is ready for promotion.
+15. Run `creative_product_audit` before generating final assets.
+16. Run `creative_evidence_map` before using strong promotional claims.
+17. Run `creative_capture_checklist` if more shots are needed.
+18. Run `creative_capture_report` after screenshots are captured.
+19. Run `creative_shot_selection` to choose the best shot for each launch asset.
+20. Run `creative_visual_issue_report` when screenshots reveal visual, mobile, copy, or runtime problems.
+21. Run `creative_launch_asset_matrix` to map assets to exact shots and supported claims.
+22. Run `creative_launch_pack`, `creative_image_prompt_pack`, or `creative_video_storyboard`.
+23. Run `creative_export_plan` when the user needs a reusable launch package.
+24. Run `creative_launch_room_export` when the user wants the complete launch-room contents.
+25. Run `creative_launch_brief`, `creative_prompt_export`, `creative_social_copy_pack`, or `creative_client_handoff` as needed.
+26. Run `creative_product_hunt_launch_button` when the user wants a one-click Product Hunt launch handoff.
+27. Run `creative_agency_report` when the user needs a client-ready commercial deliverable.
+28. Run `creative_asset_review` before publishing or delivering assets.
 
 ## Whole-Site Understanding
 

@@ -55,7 +55,688 @@ function starterGuide(params) {
             : "If the app was built in Lovable, use the Lovable Launch Pack workflow.",
     };
 }
+function makeCreativeWorkflowState(params) {
+    const productName = params.productName ?? "Lovable app";
+    const goal = (params.userGoal ?? "").toLowerCase();
+    const hasUrl = Boolean(params.websiteUrl);
+    const hasApprovedCaptures = Boolean(params.hasApprovedCaptures || (params.hasScreenshots && !params.hasPrivateDataRisk));
+    const mode = !hasUrl
+        ? "orient"
+        : params.hasPrivateDataRisk || params.hasUnsupportedClaims
+            ? "review-assets"
+            : params.needsLovableFixes || params.hasWeakScreens
+                ? "fix-before-launch"
+                : !params.hasScanEvidence || !params.hasScreenshots
+                    ? "scan"
+                    : !params.hasProductAudit
+                        ? "audit"
+                        : params.hasLaunchPack
+                            ? "handoff"
+                            : params.hasAssetMatrix || goal.includes("asset") || goal.includes("launch") || goal.includes("image") || goal.includes("video")
+                                ? "create-assets"
+                                : "audit";
+    const sourceOfTruth = params.hasGithubRepo
+        ? "github"
+        : params.isLovableApp
+            ? "lovable-preview"
+            : hasUrl
+                ? "deployed-app"
+                : params.hasScreenshots
+                    ? "screenshot-pack"
+                    : "unknown";
+    const productStatus = !hasUrl
+        ? "no-url"
+        : params.hasPrivateDataRisk || params.hasUnsupportedClaims
+            ? "review-needed"
+            : params.hasWeakScreens || params.needsLovableFixes
+                ? "weak-screens"
+                : params.hasLaunchPack
+                    ? "handoff-ready"
+                    : params.hasAssetMatrix
+                        ? "asset-ready"
+                        : params.hasProductAudit
+                            ? "audited"
+                            : params.hasScanEvidence
+                                ? "scanned"
+                                : "unscanned";
+    const captureStatus = !hasUrl && !params.hasScreenshots
+        ? "none"
+        : params.hasPrivateDataRisk
+            ? "needs-approval"
+            : hasApprovedCaptures
+                ? "approved"
+                : params.hasScreenshots
+                    ? "partial"
+                    : "unknown";
+    const launchRisk = params.hasPrivateDataRisk || params.hasUnsupportedClaims || params.hasWeakScreens || params.needsLovableFixes
+        ? "high"
+        : !params.hasProductAudit || !hasApprovedCaptures || !params.targetChannel
+            ? "medium"
+            : "low";
+    const missingInfo = [
+        ...(!hasUrl ? ["Website, deployed app, preview, or Lovable.dev URL."] : []),
+        ...(!params.targetChannel ? ["Target launch channel or deliverable."] : []),
+        ...(!params.hasScanEvidence && hasUrl ? ["Scan evidence from visited routes and product flows."] : []),
+        ...(!params.hasScreenshots && hasUrl ? ["Approved screenshot or video capture evidence."] : []),
+        ...(!params.hasProductAudit && params.hasScanEvidence ? ["Marketability/product audit result."] : []),
+    ];
+    return {
+        productName,
+        mode,
+        sourceOfTruth,
+        productStatus,
+        captureStatus,
+        launchRisk,
+        currentBlocker: !hasUrl
+            ? "The app or website URL is missing."
+            : params.hasPrivateDataRisk
+                ? "Private data risk must be cleared before assets can be used."
+                : params.hasUnsupportedClaims
+                    ? "Unsupported marketing claims need evidence or safer rewrites."
+                    : params.hasWeakScreens || params.needsLovableFixes
+                        ? "Screens are not launch-ready yet."
+                        : !params.hasScreenshots
+                            ? "Approved captures are missing."
+                            : "No hard blocker recorded yet.",
+        nextBestAction: mode === "orient"
+            ? "Ask for the product URL and target launch deliverable."
+            : mode === "scan"
+                ? "Run scan planning, browser recipe, route discovery, and capture approved evidence."
+                : mode === "audit"
+                    ? "Run marketability and product audits before generating public assets."
+                    : mode === "fix-before-launch"
+                        ? "Turn weak screens into focused Lovable fix prompts, then rescan."
+                        : mode === "review-assets"
+                            ? "Review claims, private-data risk, and visual readiness before publishing."
+                            : mode === "handoff"
+                                ? "Prepare launch brief, prompt export, social copy, and client handoff."
+                                : "Create the asset matrix and requested launch assets from approved evidence.",
+        knownFacts: asList(params.knownFacts, [
+            `Mode: ${mode}.`,
+            `Source of truth: ${sourceOfTruth}.`,
+            `Product status: ${productStatus}.`,
+            `Capture status: ${captureStatus}.`,
+            `Launch risk: ${launchRisk}.`,
+        ]),
+        missingInfo,
+    };
+}
+function makeCreativeNextActionPlan(params) {
+    const state = params.workflowState ?? makeCreativeWorkflowState(params);
+    const productName = params.productName ?? state.productName;
+    const requestedOutcome = params.requestedOutcome.toLowerCase();
+    const recommendedAction = state.mode === "orient"
+        ? "ask-user"
+        : state.mode === "scan"
+            ? "scan-product"
+            : state.mode === "audit"
+                ? "audit-readiness"
+                : state.mode === "fix-before-launch"
+                    ? "fix-screens"
+                    : state.mode === "review-assets"
+                        ? "review-assets"
+                        : state.mode === "handoff"
+                            ? "prepare-handoff"
+                            : requestedOutcome.includes("handoff") || params.hasLaunchPack
+                                ? "prepare-handoff"
+                                : "create-assets";
+    return {
+        productName,
+        recommendedAction,
+        reason: recommendedAction === "ask-user"
+            ? "Creative Studio needs the product URL and desired launch output before it can choose the right workflow."
+            : recommendedAction === "scan-product"
+                ? "The product needs evidence from real screens before marketing claims, images, or storyboards are created."
+                : recommendedAction === "audit-readiness"
+                    ? "The scan exists, but launch readiness and supported claims have not been judged yet."
+                    : recommendedAction === "fix-screens"
+                        ? "The app has weak or unfinished launch screens, so fixes should happen before final promotional assets."
+                        : recommendedAction === "review-assets"
+                            ? "Claims, privacy, or visual risks must be cleared before anything is published or sent to a client."
+                            : recommendedAction === "prepare-handoff"
+                                ? "The launch materials are ready to package into reusable files and client-facing notes."
+                                : "The product has enough evidence to build an asset matrix and create the requested launch assets.",
+        immediateSteps: [
+            "Restate the current Creative Studio workflow state.",
+            ...(recommendedAction === "ask-user"
+                ? ["Ask for the URL and target deliverable: Product Hunt, LinkedIn, X, website hero, video storyboard, client report, or all."]
+                : recommendedAction === "scan-product"
+                    ? ["Run `creative_scan_plan`.", "Run `creative_browser_scan_recipe` and `creative_route_discovery_plan`.", "Capture approved desktop/mobile screenshots, then summarize the scan."]
+                    : recommendedAction === "audit-readiness"
+                        ? ["Run `creative_site_intelligence` if needed.", "Run `creative_marketability_audit` and `creative_product_audit`.", "Map claims with `creative_evidence_map`."]
+                        : recommendedAction === "fix-screens"
+                            ? ["Run `creative_visual_issue_report`.", "Create `creative_lovable_fix_prompt_pack`.", "Hand repair work to ClawKit for Lovable, then rescan."]
+                            : recommendedAction === "review-assets"
+                                ? ["Run `creative_evidence_map`.", "Run `creative_asset_review`.", "Remove or rewrite unsupported claims."]
+                                : recommendedAction === "prepare-handoff"
+                                    ? ["Run `creative_export_plan`.", "Create `creative_launch_brief`, `creative_prompt_export`, and `creative_client_handoff`.", "Use `creative_agency_report` when the user needs a client-ready deliverable."]
+                                    : ["Run `creative_capture_report` and `creative_shot_selection`.", "Create `creative_launch_asset_matrix`.", "Generate the requested launch pack, image prompts, storyboard, or social copy."]),
+            "Record any remaining risks and approval gates before publishing.",
+        ],
+        useCreativeStudioFor: [
+            "Workflow state, scan planning, product intelligence, marketability audit, evidence mapping, asset matrix, launch assets, and handoff.",
+            "Turning real product screens into honest copy, image prompts, storyboards, and client-ready launch notes.",
+        ],
+        useClawKitForLovableFor: [
+            "Fixing weak Lovable screens, broken routes, missing UI states, mobile layout problems, and screenshot-readiness issues.",
+            "Build rescue, GitHub/source-of-truth handoff, code repair, verification, refactoring, and PR work.",
+        ],
+        requiredEvidence: [
+            "Product URL or Lovable preview/deployed URL.",
+            "Approved capture evidence for each screen used in public assets.",
+            "Product audit or marketability audit before final launch assets.",
+            "Evidence map for every strong claim.",
+            "Human approval before publishing, client delivery, or paid campaign use.",
+        ],
+        stopConditions: [
+            "Stop if private data or admin/customer screens appear without approval.",
+            "Stop if claims are unsupported by product evidence or user confirmation.",
+            "Stop if the featured screens are broken, placeholder-heavy, or visually weak.",
+            "Stop before publishing or sending client assets without final review.",
+        ],
+    };
+}
+function makeProductHuntLaunchButton(params) {
+    const productUrl = normalizeUrl(params.productUrl);
+    const topics = asList(params.topics, ["Productivity", "SaaS", "Artificial Intelligence"]);
+    const galleryAssets = asList(params.galleryAssets, []);
+    const blockers = [
+        ...(params.hasPrivateDataRisk ? ["Private data risk is still unresolved."] : []),
+        ...(params.hasUnsupportedClaims ? ["Launch copy includes unsupported claims."] : []),
+        ...(params.hasWeakScreens ? ["Featured screens are weak, broken, or placeholder-heavy."] : []),
+        ...(!params.hasApprovedCaptures ? ["Approved Product Hunt gallery captures are missing."] : []),
+        ...(!params.hasEvidenceMap ? ["Evidence map is missing for Product Hunt claims."] : []),
+        ...(!params.hasAssetReview ? ["Final asset review has not been completed."] : []),
+    ];
+    const mode = blockers.length > 0 ? "blocked" : params.hasProductHuntWriteAccess ? "api-ready" : "manual-submit";
+    return {
+        productName: params.productName,
+        mode,
+        buttonLabel: mode === "blocked"
+            ? "Fix Product Hunt Launch Blockers"
+            : mode === "api-ready"
+                ? "Review and Submit to Product Hunt"
+                : "Open Product Hunt Submit Flow",
+        submitUrl: "https://www.producthunt.com/posts/new",
+        launchDraft: {
+            name: params.productName,
+            tagline: params.tagline ?? `${params.productName} turns a real product workflow into a launch-ready experience.`,
+            productUrl,
+            description: params.description ??
+                `${params.productName} helps users move from product idea to a polished, evidence-backed launch with real screens, clear workflows, and ready-to-use promotional assets.`,
+            topics,
+            galleryAssets,
+            videoUrl: params.videoUrl ?? null,
+            makerComment: params.makerComment ??
+                `Hey Product Hunt! We built ${params.productName} to make product launches feel less manual and more evidence-based. We would love your feedback on the workflow, launch assets, and what you would want automated next.`,
+            launchDate: params.launchDate ?? null,
+        },
+        preflightChecks: [
+            "Product Hunt posting must use an eligible personal account, not a company account.",
+            "Product URL should point directly to the product, not a press page or blog post.",
+            "Gallery images and video should contain no private data, secrets, customer data, or broken UI.",
+            "Claims in the tagline, description, and maker comment must be visible in the product or confirmed by the maker.",
+            "A human should review the final Product Hunt preview before scheduling or publishing.",
+        ],
+        blockers,
+        apiRequirements: [
+            "Product Hunt OAuth access token for the posting user.",
+            "Approved Product Hunt write scope for the app/use case.",
+            "Server-side secret handling; never expose OAuth tokens in browser assets or generated launch files.",
+            "A final human approval gate before any write mutation or browser submit action.",
+        ],
+        userInstructions: mode === "blocked"
+            ? ["Resolve blockers, rerun `creative_asset_review`, then regenerate the Product Hunt launch button payload."]
+            : mode === "api-ready"
+                ? ["Use the launch draft as the Product Hunt mutation/browser-submit payload after final human approval.", "Log the submitted Product Hunt URL back into the launch handoff."]
+                : ["Press the button to open Product Hunt's submit flow, then paste the launch draft fields into the Product Hunt form.", "After creating a draft or scheduled launch, save the Product Hunt URL in the client handoff."],
+    };
+}
+function makeLaunchCommandCenter(params) {
+    const websiteUrl = params.websiteUrl ? normalizeUrl(params.websiteUrl) : null;
+    const launchGoal = params.launchGoal ?? params.targetChannel ?? "Create an evidence-backed launch pack.";
+    const workflowState = makeCreativeWorkflowState({
+        productName: params.productName,
+        websiteUrl: params.websiteUrl,
+        userGoal: launchGoal,
+        isLovableApp: params.isLovableApp,
+        hasGithubRepo: params.hasGithubRepo,
+        hasScanEvidence: params.hasScanEvidence,
+        hasScreenshots: params.hasScreenshots,
+        hasApprovedCaptures: params.hasApprovedCaptures,
+        hasProductAudit: params.hasProductAudit,
+        hasAssetMatrix: params.hasAssetMatrix,
+        hasLaunchPack: params.hasLaunchPack,
+        hasUnsupportedClaims: params.hasUnsupportedClaims,
+        hasPrivateDataRisk: params.hasPrivateDataRisk,
+        hasWeakScreens: params.hasWeakScreens,
+        needsLovableFixes: params.needsLovableFixes,
+        targetChannel: params.targetChannel,
+        knownFacts: params.knownFacts,
+    });
+    const nextActionPlan = makeCreativeNextActionPlan({
+        productName: params.productName,
+        requestedOutcome: launchGoal,
+        workflowState,
+        websiteUrl: params.websiteUrl,
+        isLovableApp: params.isLovableApp,
+        hasScanEvidence: params.hasScanEvidence,
+        hasScreenshots: params.hasScreenshots,
+        hasApprovedCaptures: params.hasApprovedCaptures,
+        hasProductAudit: params.hasProductAudit,
+        hasAssetMatrix: params.hasAssetMatrix,
+        hasLaunchPack: params.hasLaunchPack,
+        hasUnsupportedClaims: params.hasUnsupportedClaims,
+        hasPrivateDataRisk: params.hasPrivateDataRisk,
+        hasWeakScreens: params.hasWeakScreens,
+        needsLovableFixes: params.needsLovableFixes,
+        targetChannel: params.targetChannel,
+    });
+    const productHunt = makeProductHuntLaunchButton({
+        productName: params.productName,
+        productUrl: websiteUrl ?? "https://example.com",
+        tagline: params.productHuntTagline,
+        description: params.productHuntDescription,
+        makerComment: params.productHuntMakerComment,
+        topics: params.productHuntTopics,
+        galleryAssets: params.galleryAssets,
+        videoUrl: params.videoUrl,
+        launchDate: params.launchDate,
+        hasApprovedCaptures: params.hasApprovedCaptures,
+        hasEvidenceMap: params.hasEvidenceMap,
+        hasAssetReview: params.hasAssetReview,
+        hasPrivateDataRisk: params.hasPrivateDataRisk,
+        hasUnsupportedClaims: params.hasUnsupportedClaims,
+        hasWeakScreens: params.hasWeakScreens,
+        hasProductHuntWriteAccess: params.hasProductHuntWriteAccess,
+    });
+    const blockers = [
+        ...workflowState.missingInfo,
+        ...productHunt.blockers,
+        ...(params.riskyClaims && params.riskyClaims.length > 0 ? [`Risky claims need review: ${params.riskyClaims.join(", ")}.`] : []),
+        ...(params.missingScreens && params.missingScreens.length > 0 ? [`Missing launch screens: ${params.missingScreens.join(", ")}.`] : []),
+    ];
+    const scanScore = params.hasScanEvidence ? 100 : websiteUrl ? 45 : 0;
+    const captureScore = params.hasApprovedCaptures ? 100 : params.hasScreenshots ? 65 : 0;
+    const auditScore = params.hasProductAudit ? 100 : params.hasScanEvidence ? 50 : 0;
+    const assetScore = params.hasAssetMatrix ? 90 : params.hasLaunchPack ? 100 : params.hasApprovedCaptures ? 50 : 0;
+    const safetyScore = params.hasPrivateDataRisk || params.hasUnsupportedClaims || (params.riskyClaims?.length ?? 0) > 0 ? 35 : params.hasEvidenceMap && params.hasAssetReview ? 100 : 65;
+    const productHuntScore = productHunt.mode === "api-ready" || productHunt.mode === "manual-submit" ? 90 : 30;
+    const launchReadinessScore = clampScore((scanScore + captureScore + auditScore + assetScore + safetyScore + productHuntScore) / 6);
+    const launchStatus = blockers.length > 0 || workflowState.launchRisk === "high"
+        ? "blocked"
+        : params.hasLaunchPack
+            ? "handoff-ready"
+            : params.hasAssetMatrix && productHunt.mode !== "blocked"
+                ? "ready-to-submit"
+                : params.hasApprovedCaptures && params.hasProductAudit
+                    ? "asset-ready"
+                    : "needs-polish";
+    const fixesBeforeLaunch = [
+        ...(params.weakScreens ?? []).map((screen) => `Polish weak screen: ${screen}.`),
+        ...(params.missingScreens ?? []).map((screen) => `Capture or build missing launch screen: ${screen}.`),
+        ...(params.riskyClaims ?? []).map((claim) => `Rewrite or prove risky claim: ${claim}.`),
+        ...(params.hasPrivateDataRisk ? ["Remove or mask private data before using screenshots."] : []),
+        ...(params.hasUnsupportedClaims ? ["Remove unsupported claims from Product Hunt and social copy."] : []),
+    ];
+    const bestLaunchAssets = asList(params.galleryAssets, [
+        ...(params.strongestScreens ?? []).map((screen) => `Use ${screen} as a primary launch gallery candidate.`),
+        "Hero/product value slide.",
+        "Main workflow screenshot.",
+        "Proof or outcome slide.",
+        "Mobile/responsive screenshot.",
+    ]);
+    return {
+        productName: params.productName,
+        websiteUrl,
+        launchGoal,
+        launchReadinessScore,
+        launchStatus,
+        headline: launchStatus === "blocked"
+            ? `${params.productName} is not launch-ready yet. Fix the blockers, then rescan.`
+            : launchStatus === "ready-to-submit"
+                ? `${params.productName} is ready for a Product Hunt handoff after final human review.`
+                : launchStatus === "handoff-ready"
+                    ? `${params.productName} has a complete launch handoff package.`
+                    : `${params.productName} is close. Finish the evidence and asset pass before launch.`,
+        workflowState,
+        nextActionPlan,
+        productHunt,
+        commandButtons: [
+            {
+                label: "Scan Product",
+                action: "creative_scan_plan -> creative_browser_scan_recipe -> creative_route_discovery_plan",
+                enabled: Boolean(websiteUrl),
+                reason: websiteUrl ? "A product URL is available." : "Add a website, preview, or Lovable.dev URL first.",
+            },
+            {
+                label: "Fix In Lovable",
+                action: "creative_lovable_fix_prompt_pack -> ClawKit for Lovable",
+                enabled: Boolean(params.hasWeakScreens || params.needsLovableFixes || (params.missingScreens?.length ?? 0) > 0),
+                reason: "Use when launch screens are weak, missing, or not screenshot-ready.",
+            },
+            {
+                label: "Create Launch Pack",
+                action: "creative_launch_asset_matrix -> creative_launch_pack -> creative_social_copy_pack",
+                enabled: Boolean(params.hasApprovedCaptures && params.hasProductAudit && !params.hasPrivateDataRisk),
+                reason: "Requires approved captures, product audit, and cleared privacy risk.",
+            },
+            {
+                label: productHunt.buttonLabel,
+                action: "creative_product_hunt_launch_button",
+                enabled: productHunt.mode !== "blocked",
+                reason: productHunt.mode === "blocked" ? productHunt.blockers.join(" ") : "Product Hunt draft is ready for review.",
+            },
+            {
+                label: "Export Launch Room",
+                action: "creative_export_plan -> creative_launch_brief -> creative_prompt_export -> creative_client_handoff",
+                enabled: Boolean(params.hasAssetMatrix || params.hasLaunchPack),
+                reason: "Requires at least an asset matrix or launch pack.",
+            },
+        ],
+        readinessPanels: [
+            { name: "Product Scan", status: scanScore >= 90 ? "ready" : scanScore > 0 ? "watch" : "blocked", score: scanScore, notes: params.hasScanEvidence ? ["Scan evidence exists."] : ["Run a full product scan."] },
+            { name: "Captures", status: captureScore >= 90 ? "ready" : captureScore > 0 ? "watch" : "blocked", score: captureScore, notes: params.hasApprovedCaptures ? ["Approved captures are ready."] : ["Capture and approve launch screenshots."] },
+            { name: "Launch Audit", status: auditScore >= 90 ? "ready" : auditScore > 0 ? "watch" : "blocked", score: auditScore, notes: params.hasProductAudit ? ["Product audit complete."] : ["Run marketability and product audits."] },
+            { name: "Assets", status: assetScore >= 90 ? "ready" : assetScore > 0 ? "watch" : "blocked", score: assetScore, notes: params.hasAssetMatrix || params.hasLaunchPack ? ["Asset planning is ready."] : ["Create asset matrix and launch pack."] },
+            { name: "Claim Safety", status: safetyScore >= 90 ? "ready" : safetyScore > 50 ? "watch" : "blocked", score: safetyScore, notes: safetyScore >= 90 ? ["Claims and privacy have been reviewed."] : ["Finish evidence map and asset review."] },
+            { name: "Product Hunt", status: productHunt.mode === "blocked" ? "blocked" : "ready", score: productHuntScore, notes: productHunt.mode === "blocked" ? productHunt.blockers : [productHunt.buttonLabel] },
+        ],
+        bestLaunchAssets,
+        blockers,
+        fixesBeforeLaunch,
+        launchRoomFiles: [
+            { path: "launch-room/command-center.json", purpose: "Single source of truth for launch state and buttons.", sourceTools: ["creative_launch_command_center"] },
+            { path: "launch-room/product-hunt.md", purpose: "Product Hunt launch draft, maker comment, topics, gallery plan, and submit notes.", sourceTools: ["creative_product_hunt_launch_button", "creative_social_copy_pack"] },
+            { path: "launch-room/asset-matrix.json", purpose: "Asset-to-screenshot and claim mapping.", sourceTools: ["creative_launch_asset_matrix"] },
+            { path: "launch-room/gallery-prompts.md", purpose: "Product Hunt and social image prompts.", sourceTools: ["creative_image_prompt_pack", "creative_prompt_export"] },
+            { path: "launch-room/demo-storyboard.md", purpose: "15- and 30-second launch video storyboards.", sourceTools: ["creative_video_storyboard"] },
+            { path: "launch-room/client-handoff.md", purpose: "Approvals, blockers, fixes, assets, and launch sequence.", sourceTools: ["creative_client_handoff", "creative_agency_report"] },
+        ],
+        recommendedToolOrder: [
+            "creative_launch_command_center",
+            ...nextActionPlan.immediateSteps,
+            ...(productHunt.mode === "blocked" ? ["creative_asset_review", "creative_product_hunt_launch_button"] : ["creative_product_hunt_launch_button"]),
+        ],
+        userFacingSummary: launchStatus === "blocked"
+            ? `Launch readiness is ${launchReadinessScore}/100. Fix blockers before creating or submitting public launch assets.`
+            : `Launch readiness is ${launchReadinessScore}/100. The next best move is: ${workflowState.nextBestAction}`,
+    };
+}
+function makeLaunchRoomExport(params) {
+    const packageName = params.packageName ?? "launch-room";
+    const commandCenter = params.commandCenter ?? makeLaunchCommandCenter({
+        productName: params.productName,
+        websiteUrl: params.websiteUrl,
+        launchGoal: params.launchGoal,
+        targetChannel: params.targetChannel,
+        hasScanEvidence: params.hasScanEvidence,
+        hasScreenshots: params.hasScreenshots,
+        hasApprovedCaptures: params.hasApprovedCaptures,
+        hasProductAudit: params.hasProductAudit,
+        hasAssetMatrix: params.hasAssetMatrix,
+        hasLaunchPack: params.hasLaunchPack,
+        hasEvidenceMap: params.hasEvidenceMap,
+        hasAssetReview: params.hasAssetReview,
+        hasPrivateDataRisk: params.hasPrivateDataRisk,
+        hasUnsupportedClaims: params.hasUnsupportedClaims,
+        hasWeakScreens: params.hasWeakScreens,
+        needsLovableFixes: params.needsLovableFixes,
+        hasProductHuntWriteAccess: params.hasProductHuntWriteAccess,
+        productHuntTagline: params.productHuntTagline,
+        productHuntDescription: params.productHuntDescription,
+        productHuntMakerComment: params.productHuntMakerComment,
+        productHuntTopics: params.productHuntTopics,
+        galleryAssets: params.galleryAssets,
+        videoUrl: params.videoUrl,
+        launchDate: params.launchDate,
+        strongestScreens: params.strongestScreens,
+        weakScreens: params.weakScreens,
+        missingScreens: params.missingScreens,
+        supportedClaims: params.supportedClaims,
+        riskyClaims: params.riskyClaims,
+        knownFacts: params.knownFacts,
+    });
+    const supportedClaims = asList(params.supportedClaims, ["Add supported claims from `creative_evidence_map` before public launch."]);
+    const riskyClaims = asList(params.riskyClaims, []);
+    const strongestScreens = asList(params.strongestScreens, commandCenter.bestLaunchAssets);
+    const weakScreens = asList(params.weakScreens, []);
+    const missingScreens = asList(params.missingScreens, []);
+    const fixesBeforeLaunch = asList(params.fixesBeforeLaunch, commandCenter.fixesBeforeLaunch.length > 0 ? commandCenter.fixesBeforeLaunch : ["Complete final human review before publishing."]);
+    const productHunt = commandCenter.productHunt;
+    const files = [];
+    files.push({
+        path: `${packageName}/command-center.json`,
+        format: "json",
+        purpose: "Single source of truth for launch readiness, blockers, command buttons, and next action.",
+        content: JSON.stringify(commandCenter, null, 2),
+    });
+    files.push({
+        path: `${packageName}/launch-checklist.md`,
+        format: "markdown",
+        purpose: "Operational launch checklist and approval gates.",
+        content: [
+            `# ${params.productName} Launch Checklist`,
+            "",
+            `Launch status: ${commandCenter.launchStatus}`,
+            `Launch readiness: ${commandCenter.launchReadinessScore}/100`,
+            `Launch goal: ${commandCenter.launchGoal}`,
+            "",
+            "## Next Button",
+            commandCenter.nextActionPlan.immediateSteps[0] ?? commandCenter.workflowState.nextBestAction,
+            "",
+            "## Blockers",
+            ...(commandCenter.blockers.length > 0 ? commandCenter.blockers.map((item) => `- ${item}`) : ["- No blockers recorded."]),
+            "",
+            "## Approval Gates",
+            "- Screenshots and video clips approved for public use.",
+            "- No private data, secrets, customer data, or admin content visible.",
+            "- Every strong claim is evidence-backed or user-confirmed.",
+            "- Product Hunt preview reviewed by a human before submit/schedule.",
+            "- Client or maker approval recorded before public publishing.",
+        ].join("\n"),
+    });
+    files.push({
+        path: `${packageName}/evidence-map.md`,
+        format: "markdown",
+        purpose: "Claim safety and proof map for launch copy.",
+        content: [
+            `# ${params.productName} Evidence Map`,
+            "",
+            "## Supported Claims",
+            ...supportedClaims.map((claim) => `- ${claim}`),
+            "",
+            "## Risky Or Unsupported Claims",
+            ...(riskyClaims.length > 0 ? riskyClaims.map((claim) => `- ${claim}`) : ["- None supplied."]),
+            "",
+            "## Source Screens",
+            ...strongestScreens.map((screen) => `- ${screen}`),
+            "",
+            "## Rule",
+            "Do not publish claims that are not visible in product evidence or explicitly confirmed by the maker.",
+        ].join("\n"),
+    });
+    files.push({
+        path: `${packageName}/asset-matrix.json`,
+        format: "json",
+        purpose: "Structured map of launch assets to screens and claims.",
+        content: JSON.stringify({
+            productName: params.productName,
+            assets: commandCenter.bestLaunchAssets.map((asset, index) => ({
+                asset,
+                sourceScreen: strongestScreens[index] ?? strongestScreens[0] ?? "missing-shot",
+                claim: supportedClaims[index] ?? supportedClaims[0],
+                status: commandCenter.launchStatus === "blocked" ? "needs-review" : "ready-for-production",
+            })),
+            weakScreens,
+            missingScreens,
+        }, null, 2),
+    });
+    if (params.includeProductHunt ?? true) {
+        files.push({
+            path: `${packageName}/product-hunt.md`,
+            format: "markdown",
+            purpose: "Product Hunt submission draft and launch-button handoff.",
+            content: [
+                `# ${params.productName} Product Hunt Draft`,
+                "",
+                `Mode: ${productHunt.mode}`,
+                `Button: ${productHunt.buttonLabel}`,
+                `Submit URL: ${productHunt.submitUrl}`,
+                "",
+                "## Fields",
+                `Name: ${productHunt.launchDraft.name}`,
+                `Tagline: ${productHunt.launchDraft.tagline}`,
+                `Product URL: ${productHunt.launchDraft.productUrl}`,
+                `Launch date: ${productHunt.launchDraft.launchDate ?? "not scheduled"}`,
+                "",
+                "## Description",
+                productHunt.launchDraft.description,
+                "",
+                "## Topics",
+                ...productHunt.launchDraft.topics.map((topic) => `- ${topic}`),
+                "",
+                "## Gallery Assets",
+                ...(productHunt.launchDraft.galleryAssets.length > 0 ? productHunt.launchDraft.galleryAssets.map((asset) => `- ${asset}`) : ["- Add 4-6 approved gallery assets."]),
+                "",
+                "## Maker Comment",
+                productHunt.launchDraft.makerComment,
+                "",
+                "## Blockers",
+                ...(productHunt.blockers.length > 0 ? productHunt.blockers.map((item) => `- ${item}`) : ["- None."]),
+            ].join("\n"),
+        });
+    }
+    if (params.includeSocialCopy ?? true) {
+        const social = params.socialCopy ?? {};
+        files.push({
+            path: `${packageName}/social-copy.md`,
+            format: "markdown",
+            purpose: "Platform-specific launch copy.",
+            content: [
+                `# ${params.productName} Social Copy`,
+                "",
+                "## LinkedIn",
+                social.linkedin ?? `We are launching ${params.productName}: ${productHunt.launchDraft.tagline}\n\n${supportedClaims.slice(0, 3).map((claim) => `- ${claim}`).join("\n")}\n\n${productHunt.launchDraft.productUrl}`,
+                "",
+                "## X",
+                social.x ?? `${params.productName} is launching: ${productHunt.launchDraft.tagline} ${productHunt.launchDraft.productUrl}`,
+                "",
+                "## Product Hunt Teaser",
+                social.productHunt ?? productHunt.launchDraft.makerComment,
+                "",
+                "## Indie Hackers",
+                social.indieHackers ?? `We are preparing ${params.productName} for launch and would love feedback on the workflow, screenshots, and positioning.`,
+                "",
+                "## Email",
+                social.email ?? `Subject: ${params.productName} is launching\n\n${productHunt.launchDraft.description}\n\n${productHunt.launchDraft.productUrl}`,
+                "",
+                "## Website Banner",
+                social.websiteBanner ?? `${params.productName} is live. ${productHunt.launchDraft.tagline}`,
+            ].join("\n"),
+        });
+    }
+    if (params.includeGalleryPrompts ?? true) {
+        const prompts = asList(params.galleryPrompts, [
+            `Create a Product Hunt gallery slide for ${params.productName} using the strongest product screenshot. Headline: ${productHunt.launchDraft.tagline}. Keep the product UI recognizable and the copy short.`,
+            `Create a workflow slide showing how a user moves from problem to successful outcome in ${params.productName}. Use real captured screens and avoid unsupported claims.`,
+            `Create a proof/value slide using supported claims only: ${supportedClaims.join("; ")}.`,
+        ]);
+        files.push({
+            path: `${packageName}/gallery-prompts.md`,
+            format: "markdown",
+            purpose: "Design and image-generation prompts for Product Hunt/social gallery assets.",
+            content: [`# ${params.productName} Gallery Prompts`, "", ...prompts.map((prompt, index) => `## Slide ${index + 1}\n${prompt}`)].join("\n\n"),
+        });
+    }
+    if (params.includeVideoStoryboard ?? true) {
+        const scenes = asList(params.videoStoryboardScenes, [
+            "0-3s: Show the product name and core launch promise.",
+            "3-9s: Show the main workflow using approved product captures.",
+            "9-15s: Show the strongest feature or proof screen.",
+            "15-25s: Show outcome, supported claims, and mobile/desktop polish.",
+            "25-30s: End with Product Hunt/community call to action.",
+        ]);
+        files.push({
+            path: `${packageName}/demo-storyboard.md`,
+            format: "markdown",
+            purpose: "Short demo video storyboard for launch assets.",
+            content: [`# ${params.productName} Demo Storyboard`, "", ...scenes.map((scene) => `- ${scene}`)].join("\n"),
+        });
+    }
+    if ((params.includeLovableFixPrompts ?? true) && (weakScreens.length > 0 || missingScreens.length > 0 || commandCenter.launchStatus === "blocked")) {
+        files.push({
+            path: `${packageName}/lovable-fix-prompts.md`,
+            format: "markdown",
+            purpose: "Focused Lovable prompts for fixing launch blockers before recapture.",
+            content: [
+                `# ${params.productName} Lovable Fix Prompts`,
+                "",
+                "## Fix Prompt",
+                `Improve ${params.productName} for launch readiness. Preserve approved behavior and visual direction. Fix weak or missing screens, remove placeholder content, clarify CTAs, and make desktop/mobile screenshots Product Hunt-ready.`,
+                "",
+                "## Weak Screens",
+                ...(weakScreens.length > 0 ? weakScreens.map((screen) => `- ${screen}`) : ["- No weak screens supplied."]),
+                "",
+                "## Missing Screens",
+                ...(missingScreens.length > 0 ? missingScreens.map((screen) => `- ${screen}`) : ["- No missing screens supplied."]),
+                "",
+                "## Acceptance Criteria",
+                "- Main workflow is visible and screenshot-ready.",
+                "- Mobile layout is clean.",
+                "- No private data or placeholder content appears.",
+                "- Product Hunt gallery captures can be retaken after fixes.",
+            ].join("\n"),
+        });
+    }
+    if (params.includeClientHandoff ?? true) {
+        const clientNotes = asList(params.clientNotes, ["Review blockers, approve public assets, then submit or schedule the Product Hunt launch."]);
+        files.push({
+            path: `${packageName}/client-handoff.md`,
+            format: "markdown",
+            purpose: "Client or maker handoff for launch state, assets, blockers, and approvals.",
+            content: [
+                `# ${params.productName} Launch Room Handoff`,
+                "",
+                commandCenter.headline,
+                "",
+                `Readiness: ${commandCenter.launchReadinessScore}/100`,
+                `Status: ${commandCenter.launchStatus}`,
+                "",
+                "## Best Assets",
+                ...commandCenter.bestLaunchAssets.map((asset) => `- ${asset}`),
+                "",
+                "## Fix Before Launch",
+                ...fixesBeforeLaunch.map((fix) => `- ${fix}`),
+                "",
+                "## Notes",
+                ...clientNotes.map((note) => `- ${note}`),
+            ].join("\n"),
+        });
+    }
+    return {
+        productName: params.productName,
+        packageName,
+        launchStatus: commandCenter.launchStatus,
+        launchReadinessScore: commandCenter.launchReadinessScore,
+        files,
+        nextActions: [
+            commandCenter.workflowState.nextBestAction,
+            ...commandCenter.nextActionPlan.immediateSteps,
+            "Save the launch-room files into the project handoff location.",
+            "Run final human review before publishing or client delivery.",
+        ],
+        approvalGates: [
+            "Human review of Product Hunt draft.",
+            "Approved public screenshots and video clips.",
+            "No private data or secrets in assets.",
+            "Supported claims only.",
+            "Maker/client approval before submission.",
+        ],
+    };
+}
 function makeCreativeStudioBrain(params) {
+    const workflowState = makeCreativeWorkflowState(params);
     const productName = params.productName ?? "Lovable app";
     const goal = (params.userGoal ?? "").toLowerCase();
     const hasUrl = Boolean(params.websiteUrl);
@@ -144,6 +825,7 @@ function makeCreativeStudioBrain(params) {
             "Stop if the app is visually broken or placeholder-heavy; route fixes to ClawKit for Lovable first.",
             "Stop before publishing or sending client assets without review.",
         ],
+        workflowState,
     };
 }
 function makeScanPlan(params) {
@@ -1945,6 +2627,155 @@ export default definePluginEntry({
             },
         });
         api.registerTool({
+            name: "creative_launch_command_center",
+            label: "Open Launch Command Center",
+            description: "Create the top-level launch cockpit: readiness score, workflow state, next action, Product Hunt button, launch blockers, command buttons, and launch-room export plan.",
+            parameters: Type.Object({
+                productName: Type.String(),
+                websiteUrl: Type.Optional(Type.String()),
+                launchGoal: Type.Optional(Type.String()),
+                targetChannel: Type.Optional(Type.String()),
+                isLovableApp: Type.Optional(Type.Boolean()),
+                hasGithubRepo: Type.Optional(Type.Boolean()),
+                hasScanEvidence: Type.Optional(Type.Boolean()),
+                hasScreenshots: Type.Optional(Type.Boolean()),
+                hasApprovedCaptures: Type.Optional(Type.Boolean()),
+                hasProductAudit: Type.Optional(Type.Boolean()),
+                hasAssetMatrix: Type.Optional(Type.Boolean()),
+                hasLaunchPack: Type.Optional(Type.Boolean()),
+                hasEvidenceMap: Type.Optional(Type.Boolean()),
+                hasAssetReview: Type.Optional(Type.Boolean()),
+                hasPrivateDataRisk: Type.Optional(Type.Boolean()),
+                hasUnsupportedClaims: Type.Optional(Type.Boolean()),
+                hasWeakScreens: Type.Optional(Type.Boolean()),
+                needsLovableFixes: Type.Optional(Type.Boolean()),
+                wantsProductHunt: Type.Optional(Type.Boolean()),
+                hasProductHuntWriteAccess: Type.Optional(Type.Boolean()),
+                productHuntTagline: Type.Optional(Type.String()),
+                productHuntDescription: Type.Optional(Type.String()),
+                productHuntMakerComment: Type.Optional(Type.String()),
+                productHuntTopics: optionalStringArray("Product Hunt topics or categories."),
+                galleryAssets: optionalStringArray("Best approved launch asset references."),
+                videoUrl: Type.Optional(Type.String()),
+                launchDate: Type.Optional(Type.String()),
+                strongestScreens: optionalStringArray("Strongest captured screens."),
+                weakScreens: optionalStringArray("Weak or unfinished screens."),
+                missingScreens: optionalStringArray("Missing launch screens."),
+                supportedClaims: optionalStringArray("Supported launch claims."),
+                riskyClaims: optionalStringArray("Risky or unsupported claims."),
+                knownFacts: optionalStringArray("Known launch facts already gathered."),
+            }),
+            async execute(_id, params) {
+                return jsonText(makeLaunchCommandCenter(params));
+            },
+        });
+        api.registerTool({
+            name: "creative_launch_room_export",
+            label: "Export Launch Room",
+            description: "Create the actual launch-room package contents: command center JSON, Product Hunt draft, social copy, gallery prompts, demo storyboard, evidence map, asset matrix, checklist, client handoff, and Lovable fix prompts.",
+            parameters: Type.Object({
+                productName: Type.String(),
+                websiteUrl: Type.Optional(Type.String()),
+                packageName: Type.Optional(Type.String()),
+                launchGoal: Type.Optional(Type.String()),
+                targetChannel: Type.Optional(Type.String()),
+                commandCenter: Type.Optional(Type.Any()),
+                includeProductHunt: Type.Optional(Type.Boolean()),
+                includeSocialCopy: Type.Optional(Type.Boolean()),
+                includeGalleryPrompts: Type.Optional(Type.Boolean()),
+                includeVideoStoryboard: Type.Optional(Type.Boolean()),
+                includeClientHandoff: Type.Optional(Type.Boolean()),
+                includeLovableFixPrompts: Type.Optional(Type.Boolean()),
+                productHuntTagline: Type.Optional(Type.String()),
+                productHuntDescription: Type.Optional(Type.String()),
+                productHuntMakerComment: Type.Optional(Type.String()),
+                productHuntTopics: optionalStringArray("Product Hunt topics or categories."),
+                galleryAssets: optionalStringArray("Approved gallery asset references."),
+                videoUrl: Type.Optional(Type.String()),
+                launchDate: Type.Optional(Type.String()),
+                supportedClaims: optionalStringArray("Evidence-backed claims."),
+                riskyClaims: optionalStringArray("Risky or unsupported claims."),
+                strongestScreens: optionalStringArray("Strongest captured screens."),
+                weakScreens: optionalStringArray("Weak or unfinished screens."),
+                missingScreens: optionalStringArray("Missing launch screens."),
+                fixesBeforeLaunch: optionalStringArray("Fixes required before launch."),
+                socialCopy: Type.Optional(Type.Any()),
+                galleryPrompts: optionalStringArray("Product Hunt gallery or social image prompts."),
+                videoStoryboardScenes: optionalStringArray("Video storyboard scene notes."),
+                clientNotes: optionalStringArray("Client or maker handoff notes."),
+                knownFacts: optionalStringArray("Known launch facts already gathered."),
+                hasScanEvidence: Type.Optional(Type.Boolean()),
+                hasScreenshots: Type.Optional(Type.Boolean()),
+                hasApprovedCaptures: Type.Optional(Type.Boolean()),
+                hasProductAudit: Type.Optional(Type.Boolean()),
+                hasAssetMatrix: Type.Optional(Type.Boolean()),
+                hasLaunchPack: Type.Optional(Type.Boolean()),
+                hasEvidenceMap: Type.Optional(Type.Boolean()),
+                hasAssetReview: Type.Optional(Type.Boolean()),
+                hasPrivateDataRisk: Type.Optional(Type.Boolean()),
+                hasUnsupportedClaims: Type.Optional(Type.Boolean()),
+                hasWeakScreens: Type.Optional(Type.Boolean()),
+                needsLovableFixes: Type.Optional(Type.Boolean()),
+                hasProductHuntWriteAccess: Type.Optional(Type.Boolean()),
+            }),
+            async execute(_id, params) {
+                return jsonText(makeLaunchRoomExport(params));
+            },
+        });
+        api.registerTool({
+            name: "creative_workflow_state",
+            label: "Create Creative Workflow State",
+            description: "Summarize a Creative Studio for Lovable launch situation into a simple state: mode, source of truth, product status, capture status, launch risk, blocker, and next action.",
+            parameters: Type.Object({
+                productName: Type.Optional(Type.String()),
+                websiteUrl: Type.Optional(Type.String()),
+                userGoal: Type.Optional(Type.String()),
+                isLovableApp: Type.Optional(Type.Boolean()),
+                hasGithubRepo: Type.Optional(Type.Boolean()),
+                hasScanEvidence: Type.Optional(Type.Boolean()),
+                hasScreenshots: Type.Optional(Type.Boolean()),
+                hasApprovedCaptures: Type.Optional(Type.Boolean()),
+                hasProductAudit: Type.Optional(Type.Boolean()),
+                hasAssetMatrix: Type.Optional(Type.Boolean()),
+                hasLaunchPack: Type.Optional(Type.Boolean()),
+                hasUnsupportedClaims: Type.Optional(Type.Boolean()),
+                hasPrivateDataRisk: Type.Optional(Type.Boolean()),
+                hasWeakScreens: Type.Optional(Type.Boolean()),
+                needsLovableFixes: Type.Optional(Type.Boolean()),
+                targetChannel: Type.Optional(Type.String()),
+                knownFacts: optionalStringArray("Creative Studio facts already known to OpenClaw."),
+            }),
+            async execute(_id, params) {
+                return jsonText(makeCreativeWorkflowState(params));
+            },
+        });
+        api.registerTool({
+            name: "creative_next_action_plan",
+            label: "Plan Creative Next Action",
+            description: "Choose the next safe Creative Studio action so the user does not need to pick between scanning, auditing, fixing screens, creating assets, reviewing, or handoff.",
+            parameters: Type.Object({
+                productName: Type.Optional(Type.String()),
+                requestedOutcome: Type.String(),
+                workflowState: Type.Optional(Type.Any()),
+                websiteUrl: Type.Optional(Type.String()),
+                isLovableApp: Type.Optional(Type.Boolean()),
+                hasScanEvidence: Type.Optional(Type.Boolean()),
+                hasScreenshots: Type.Optional(Type.Boolean()),
+                hasApprovedCaptures: Type.Optional(Type.Boolean()),
+                hasProductAudit: Type.Optional(Type.Boolean()),
+                hasAssetMatrix: Type.Optional(Type.Boolean()),
+                hasLaunchPack: Type.Optional(Type.Boolean()),
+                hasUnsupportedClaims: Type.Optional(Type.Boolean()),
+                hasPrivateDataRisk: Type.Optional(Type.Boolean()),
+                hasWeakScreens: Type.Optional(Type.Boolean()),
+                needsLovableFixes: Type.Optional(Type.Boolean()),
+                targetChannel: Type.Optional(Type.String()),
+            }),
+            async execute(_id, params) {
+                return jsonText(makeCreativeNextActionPlan(params));
+            },
+        });
+        api.registerTool({
             name: "creative_starter_guide",
             label: "Creative Studio Guide",
             description: "Explain how ClawKit Creative Studio for Lovable uses OpenClaw to scan full websites/apps and create promotional asset packs.",
@@ -2328,6 +3159,32 @@ export default definePluginEntry({
             }),
             async execute(_id, params) {
                 return jsonText(makeSocialCopyPack(params));
+            },
+        });
+        api.registerTool({
+            name: "creative_product_hunt_launch_button",
+            label: "Create Product Hunt Launch Button",
+            description: "Create a guarded Product Hunt launch-button payload: prefilled launch draft, preflight checks, blockers, submit URL, and API-ready requirements when Product Hunt write access exists.",
+            parameters: Type.Object({
+                productName: Type.String(),
+                productUrl: Type.String(),
+                tagline: Type.Optional(Type.String()),
+                description: Type.Optional(Type.String()),
+                makerComment: Type.Optional(Type.String()),
+                topics: optionalStringArray("Product Hunt topics or categories."),
+                galleryAssets: optionalStringArray("Approved Product Hunt gallery image/video asset references."),
+                videoUrl: Type.Optional(Type.String()),
+                launchDate: Type.Optional(Type.String()),
+                hasApprovedCaptures: Type.Optional(Type.Boolean()),
+                hasEvidenceMap: Type.Optional(Type.Boolean()),
+                hasAssetReview: Type.Optional(Type.Boolean()),
+                hasPrivateDataRisk: Type.Optional(Type.Boolean()),
+                hasUnsupportedClaims: Type.Optional(Type.Boolean()),
+                hasWeakScreens: Type.Optional(Type.Boolean()),
+                hasProductHuntWriteAccess: Type.Optional(Type.Boolean()),
+            }),
+            async execute(_id, params) {
+                return jsonText(makeProductHuntLaunchButton(params));
             },
         });
         api.registerTool({

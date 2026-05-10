@@ -19,6 +19,15 @@ This is an early public release. It is useful now, and it will improve continuou
 
 The Creative Studio Brain decides whether OpenClaw should orient the user, scan the app, audit marketability, route weak screens back to ClawKit for Lovable, create assets, review claims/privacy, or prepare a client handoff.
 
+To match the guided experience in ClawKit for Lovable, Creative Studio also exposes a simple state-and-next-action loop:
+
+- `creative_launch_command_center` is the launch cockpit: readiness score, workflow state, next action, Product Hunt button, blockers, command buttons, and launch-room export plan.
+- `creative_launch_room_export` creates the actual launch room package: command center JSON, Product Hunt draft, social copy, gallery prompts, demo storyboard, evidence map, asset matrix, checklist, client handoff, and Lovable fix prompts.
+- `creative_workflow_state` turns scattered launch facts into one plain status object: mode, source of truth, product status, capture status, launch risk, current blocker, and next best action.
+- `creative_next_action_plan` chooses the next safe move so the user does not have to know whether to scan, audit, fix screens, create assets, review claims, or prepare handoff files.
+
+Creative Studio can also create a Product Hunt launch button payload. Because Product Hunt write access is restricted and account-gated, the safe default is a one-click handoff that opens Product Hunt's submit flow with a complete launch draft for human review. If a team has approved Product Hunt write scope and server-side OAuth handling, the same payload can be used as an API-ready submission plan with a final approval gate.
+
 ## What It Does
 
 - Asks for the app or website URL.
@@ -46,6 +55,10 @@ The result is a launch pack based on what the product actually shows, not generi
 | Tool | Purpose |
 | --- | --- |
 | `creative_studio_brain` | Chooses the next Creative Studio workflow: orient, scan, audit, fix before launch, create assets, review assets, or hand off. |
+| `creative_launch_command_center` | Creates the launch cockpit: readiness score, state, next action, Product Hunt button, blockers, command buttons, and launch-room export plan. |
+| `creative_launch_room_export` | Creates the actual launch-room package contents for Product Hunt, social copy, gallery prompts, evidence, assets, checklist, fixes, and handoff. |
+| `creative_workflow_state` | Turns messy launch facts into a simple state: mode, source of truth, product status, capture status, launch risk, blocker, and next action. |
+| `creative_next_action_plan` | Chooses the next safe action: ask the user, scan, audit, fix screens, create assets, review assets, or prepare handoff. |
 | `creative_starter_guide` | Explains the workflow and user options. |
 | `creative_scan_plan` | Creates the full-site scan plan, evidence list, approvals, and stop conditions. |
 | `creative_browser_scan_recipe` | Creates a repeatable OpenClaw browser inspection protocol. |
@@ -67,6 +80,7 @@ The result is a launch pack based on what the product actually shows, not generi
 | `creative_launch_brief` | Creates a markdown launch brief from intelligence, audit, evidence, and asset matrix. |
 | `creative_prompt_export` | Formats image prompts and video storyboard scenes into a handoff document. |
 | `creative_social_copy_pack` | Creates LinkedIn, X/Twitter, Product Hunt, Indie Hackers, email, and banner copy. |
+| `creative_product_hunt_launch_button` | Creates a guarded Product Hunt launch button payload with draft fields, submit URL, blockers, checks, and API-ready requirements. |
 | `creative_client_handoff` | Creates an agency/client-ready summary with approvals and fixes. |
 | `creative_agency_report` | Creates a polished client-facing launch readiness report with audit findings, fixes, asset recommendations, and launch sequence. |
 | `creative_lovable_project_context` | Creates shared context from Lovable, GitHub, readiness, risks, and launch goals. |
@@ -83,26 +97,31 @@ The result is a launch pack based on what the product actually shows, not generi
 
 ## Suggested Workflow
 
-1. Ask the user for the website, app, preview, or Lovable URL.
-2. Ask what they want: launch pack, Product Hunt gallery, social images, video storyboard, or all of the above.
-3. Run `creative_scan_plan`.
-4. Run `creative_browser_scan_recipe` and `creative_route_discovery_plan`.
-5. Use OpenClaw browser tools to inspect the site and capture screenshots or approved video clips.
-6. Run `creative_scan_session_summary`.
-7. Run `creative_site_intelligence` with the page evidence.
-8. Run `creative_marketability_audit` to decide whether the app is ready for promotion.
-9. Run `creative_product_audit` to understand the product, diagnose screens, choose the promo angle, and list fixes before asset generation.
-10. Run `creative_evidence_map` before writing strong claims.
-11. Run `creative_capture_checklist` if more shots are needed.
-12. Run `creative_capture_report` to inventory approved, weak, and missing shots.
-13. Run `creative_shot_selection` to choose the best screenshots for each launch asset.
-14. Run `creative_visual_issue_report` if screenshots reveal broken UI, poor mobile layout, weak copy, or runtime issues.
-15. Run `creative_launch_asset_matrix` to map assets to screenshots and supported claims.
-16. Run `creative_launch_pack`, `creative_image_prompt_pack`, or `creative_video_storyboard`.
-17. Run `creative_export_plan` when the user wants a reusable handoff package.
-18. Run `creative_launch_brief`, `creative_prompt_export`, `creative_social_copy_pack`, and `creative_client_handoff` as needed.
-19. Run `creative_agency_report` when the user needs a client-ready deliverable.
-20. Run `creative_asset_review` before publishing or sending assets to a client.
+1. OpenClaw calls `creative_launch_command_center` when the user wants the full launch cockpit or Product Hunt-ready launch flow.
+2. OpenClaw calls `creative_studio_brain` to choose the mode and next action.
+3. OpenClaw calls `creative_workflow_state` when the facts are scattered or a session is resuming.
+4. Ask the user for the website, app, preview, or Lovable URL.
+5. Ask what they want: launch pack, Product Hunt gallery, social images, video storyboard, or all of the above.
+6. Run `creative_next_action_plan` before choosing the next operational step.
+7. Run `creative_scan_plan`.
+8. Run `creative_browser_scan_recipe` and `creative_route_discovery_plan`.
+9. Use OpenClaw browser tools to inspect the site and capture screenshots or approved video clips.
+10. Run `creative_scan_session_summary`.
+11. Run `creative_site_intelligence` with the page evidence.
+12. Run `creative_marketability_audit` to decide whether the app is ready for promotion.
+13. Run `creative_product_audit` to understand the product, diagnose screens, choose the promo angle, and list fixes before asset generation.
+14. Run `creative_evidence_map` before writing strong claims.
+15. Run `creative_capture_checklist` if more shots are needed.
+16. Run `creative_capture_report` to inventory approved, weak, and missing shots.
+17. Run `creative_shot_selection` to choose the best screenshots for each launch asset.
+18. Run `creative_visual_issue_report` if screenshots reveal broken UI, poor mobile layout, weak copy, or runtime issues.
+19. Run `creative_launch_asset_matrix` to map assets to screenshots and supported claims.
+20. Run `creative_launch_pack`, `creative_image_prompt_pack`, or `creative_video_storyboard`.
+21. Run `creative_export_plan` when the user wants a reusable handoff package.
+22. Run `creative_launch_room_export` when the user wants the complete launch-room contents.
+23. Run `creative_launch_brief`, `creative_prompt_export`, `creative_social_copy_pack`, and `creative_client_handoff` as needed.
+24. Run `creative_agency_report` when the user needs a client-ready deliverable.
+25. Run `creative_asset_review` before publishing or sending assets to a client.
 
 ## Browser Scan
 
