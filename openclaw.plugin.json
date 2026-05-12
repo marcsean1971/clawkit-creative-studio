@@ -2,7 +2,7 @@
   "id": "clawkit-creative-studio",
   "name": "ClawKit Creative Studio for Lovable",
   "description": "Helps OpenClaw scan full Lovable.dev websites and apps, understand product flows, and create launch-ready promotional images, scripts, storyboards, and campaign packs.",
-  "version": "0.1.10",
+  "version": "0.1.11",
   "skills": [
     "skills/clawkit-creative-studio"
   ],
@@ -30,6 +30,10 @@
       "creative_launch_pack",
       "creative_image_prompt_pack",
       "creative_video_storyboard",
+      "creative_media_production_plan",
+      "creative_social_image_render_pack",
+      "creative_video_render_pack",
+      "creative_media_asset_manifest",
       "creative_export_plan",
       "creative_launch_brief",
       "creative_prompt_export",

@@ -28,6 +28,8 @@ To match the guided experience in ClawKit for Lovable, Creative Studio also expo
 
 Creative Studio can also create a Product Hunt launch button payload. Because Product Hunt write access is restricted and account-gated, the safe default is a one-click handoff that opens Product Hunt's submit flow with a complete launch draft for human review. If a team has approved Product Hunt write scope and server-side OAuth handling, the same payload can be used as an API-ready submission plan with a final approval gate.
 
+Creative Studio now includes Creative Production Mode for actual media production handoff. It can decide whether a launch should stay prompt-only, render social images, render video, or produce a full media pack. The plugin still does not call image/video APIs directly; it creates renderer-ready specs for OpenClaw image-generation, design, screen-recording, FFmpeg/Remotion, or approved external video tools.
+
 ## What It Does
 
 - Asks for the app or website URL.
@@ -38,6 +40,7 @@ Creative Studio can also create a Product Hunt launch button payload. Because Pr
 - Runs Creative Audit Mode before asset generation so weak screens, missing trust signals, risky claims, and best promo angles are clear.
 - Maps promotional claims back to visible evidence.
 - Creates launch packs, promotional image prompts, social copy, and video storyboards.
+- Creates renderer-ready social image packs, video render packs, and media asset manifests for actual PNG/JPG/MP4 production by approved tools.
 - Creates agency/client-ready launch readiness reports.
 - Reviews marketing claims so assets stay honest and safe.
 - Includes a special Lovable Launch Pack workflow for Lovable apps.
@@ -76,6 +79,10 @@ The result is a launch pack based on what the product actually shows, not generi
 | `creative_launch_pack` | Produces launch copy, asset concepts, and review checklist. |
 | `creative_image_prompt_pack` | Creates image-generation prompts for promotional assets. |
 | `creative_video_storyboard` | Creates 15- or 30-second promo video storyboards. |
+| `creative_media_production_plan` | Chooses prompt-only, rendered social image, rendered video, or full media-pack production from approved product evidence. |
+| `creative_social_image_render_pack` | Creates final PNG/JPG social image render specs and prompts for Product Hunt, LinkedIn, X, hero, and campaign formats. |
+| `creative_video_render_pack` | Creates MP4 video render specs: timeline, source screenshots/clips, captions, motion notes, export targets, and review checklist. |
+| `creative_media_asset_manifest` | Packages media production outputs into renderer handoff files for image/video tools. |
 | `creative_export_plan` | Plans the files that should make up a launch handoff pack. |
 | `creative_launch_brief` | Creates a markdown launch brief from intelligence, audit, evidence, and asset matrix. |
 | `creative_prompt_export` | Formats image prompts and video storyboard scenes into a handoff document. |
@@ -117,11 +124,13 @@ The result is a launch pack based on what the product actually shows, not generi
 18. Run `creative_visual_issue_report` if screenshots reveal broken UI, poor mobile layout, weak copy, or runtime issues.
 19. Run `creative_launch_asset_matrix` to map assets to screenshots and supported claims.
 20. Run `creative_launch_pack`, `creative_image_prompt_pack`, or `creative_video_storyboard`.
-21. Run `creative_export_plan` when the user wants a reusable handoff package.
-22. Run `creative_launch_room_export` when the user wants the complete launch-room contents.
-23. Run `creative_launch_brief`, `creative_prompt_export`, `creative_social_copy_pack`, and `creative_client_handoff` as needed.
-24. Run `creative_agency_report` when the user needs a client-ready deliverable.
-25. Run `creative_asset_review` before publishing or sending assets to a client.
+21. Run `creative_media_production_plan` when the user wants actual social images or video produced.
+22. Run `creative_social_image_render_pack`, `creative_video_render_pack`, and `creative_media_asset_manifest` for renderer-ready media production.
+23. Run `creative_export_plan` when the user wants a reusable handoff package.
+24. Run `creative_launch_room_export` when the user wants the complete launch-room contents.
+25. Run `creative_launch_brief`, `creative_prompt_export`, `creative_social_copy_pack`, and `creative_client_handoff` as needed.
+26. Run `creative_agency_report` when the user needs a client-ready deliverable.
+27. Run `creative_asset_review` before publishing or sending assets to a client.
 
 ## Browser Scan
 
@@ -217,7 +226,7 @@ This pairs naturally with ClawKit for Lovable:
 
 ## Important Guardrails
 
-The plugin itself does not crawl websites, read files, record screens, call image/video APIs, or send network requests. It stays marketplace-safe and tells OpenClaw how to use its trusted browser, screenshot, video, and creative-generation tools.
+The plugin itself does not crawl websites, read files, record screens, call image/video APIs, render MP4 files, or send network requests. It stays marketplace-safe and tells OpenClaw how to use its trusted browser, screenshot, video, image-generation, design, and renderer tools.
 
 Do not publish generated assets until:
 

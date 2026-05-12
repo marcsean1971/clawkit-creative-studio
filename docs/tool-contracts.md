@@ -245,6 +245,53 @@ Input: site intelligence brief, duration, orientation, approved screenshot/clip 
 
 Output: video storyboard with timing, scene titles, direction, on-screen text, voiceover notes, and production notes.
 
+## `creative_media_production_plan`
+
+Input: product name, website URL, launch goal, target channels, rendered-image/video intent, approved screenshot and clip references, supported claims, asset-review status, private-data/unsupported-claim/weak-screen flags, desired image and video formats, and preferred renderer.
+
+Output: Creative Production Mode decision with:
+
+- Production mode: prompt-only, render-social-images, render-video, render-full-media-pack, or blocked.
+- Source readiness for screenshots, video clips, claims, and screen quality.
+- Recommended outputs with owner and status.
+- Render pipeline, blockers, approval gates, and next tools.
+
+Use this when the user wants actual social media images or video as part of the product offering.
+
+## `creative_social_image_render_pack`
+
+Input: product name, approved screenshot references, supported claims, target formats, brand colors, style direction, and renderer mode.
+
+Output: final social image render specs with:
+
+- Platform formats and dimensions.
+- Source screenshots.
+- Headlines and supporting copy.
+- Image-generation/design prompts and negative prompts.
+- Export filenames, shared style rules, and review checklist.
+
+Use it after screenshots and claims are approved, before OpenClaw or a design/image-generation tool renders PNG/JPG assets.
+
+## `creative_video_render_pack`
+
+Input: product name, approved screenshot references, approved video clip references, supported claims, duration, orientation, voiceover preference, and renderer mode.
+
+Output: video render pack with:
+
+- Renderer mode: storyboard-only, screen-recording-edit, remotion-ffmpeg, or video-provider.
+- Timeline with time ranges, scenes, source assets, motion notes, captions, and optional voiceover.
+- Assets needed, render notes, export targets, and review checklist.
+
+Use it before rendering MP4 launch videos, Product Hunt demos, or short-form social videos.
+
+## `creative_media_asset_manifest`
+
+Input: product name, package name, optional media production plan, optional social image render pack, and optional video render pack.
+
+Output: renderer handoff package with JSON and markdown files for the production plan, social image prompts/specs, video render specs, video timeline, and next actions.
+
+Use it when the user wants an operational media package that can be sent to OpenClaw image/video tools, a designer, a video editor, or an external renderer.
+
 ## `creative_export_plan`
 
 Input: product name, package name, and whether to include video, client handoff, and CSV shot list.

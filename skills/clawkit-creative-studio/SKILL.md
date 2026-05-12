@@ -13,6 +13,8 @@ Use `creative_launch_command_center` when the user wants the full launch cockpit
 
 Use `creative_launch_room_export` when the user wants the complete operational package. This should turn the command center into usable files: Product Hunt draft, social copy, gallery prompts, demo storyboard, evidence map, asset matrix, checklist, client handoff, and Lovable fix prompts when needed.
 
+Use `creative_media_production_plan` when the user asks whether actual social images or video can be produced, or when they ask for rendered launch media. Then use `creative_social_image_render_pack`, `creative_video_render_pack`, and `creative_media_asset_manifest` to create renderer-ready PNG/JPG/MP4 production handoffs. Do not claim the plugin directly calls image/video APIs; it coordinates approved OpenClaw media tools, designers, video editors, or external renderers.
+
 Use `creative_workflow_state` when the facts are scattered, a session resumes, or the user asks where the launch workflow stands. Use `creative_next_action_plan` before choosing between scanning, auditing, fixing Lovable screens, creating assets, reviewing assets, or preparing a handoff. The user should feel the same guided experience they get from ClawKit for Lovable: they describe the outcome, and OpenClaw chooses the next safe step.
 
 - ClawKit for Lovable: build, rescue, verify, refactor, GitHub handoff.
@@ -56,12 +58,14 @@ For Product Hunt, use `creative_product_hunt_launch_button` only after launch as
 20. Run `creative_visual_issue_report` when screenshots reveal visual, mobile, copy, or runtime problems.
 21. Run `creative_launch_asset_matrix` to map assets to exact shots and supported claims.
 22. Run `creative_launch_pack`, `creative_image_prompt_pack`, or `creative_video_storyboard`.
-23. Run `creative_export_plan` when the user needs a reusable launch package.
-24. Run `creative_launch_room_export` when the user wants the complete launch-room contents.
-25. Run `creative_launch_brief`, `creative_prompt_export`, `creative_social_copy_pack`, or `creative_client_handoff` as needed.
-26. Run `creative_product_hunt_launch_button` when the user wants a one-click Product Hunt launch handoff.
-27. Run `creative_agency_report` when the user needs a client-ready commercial deliverable.
-28. Run `creative_asset_review` before publishing or delivering assets.
+23. Run `creative_media_production_plan` when the user wants actual rendered social images or video.
+24. Run `creative_social_image_render_pack`, `creative_video_render_pack`, and `creative_media_asset_manifest` to create renderer-ready production handoffs.
+25. Run `creative_export_plan` when the user needs a reusable launch package.
+26. Run `creative_launch_room_export` when the user wants the complete launch-room contents.
+27. Run `creative_launch_brief`, `creative_prompt_export`, `creative_social_copy_pack`, or `creative_client_handoff` as needed.
+28. Run `creative_product_hunt_launch_button` when the user wants a one-click Product Hunt launch handoff.
+29. Run `creative_agency_report` when the user needs a client-ready commercial deliverable.
+30. Run `creative_asset_review` before publishing or delivering assets.
 
 ## Whole-Site Understanding
 

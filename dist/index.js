@@ -735,6 +735,287 @@ function makeLaunchRoomExport(params) {
         ],
     };
 }
+function makeMediaProductionPlan(params) {
+    const screenshots = asList(params.approvedScreenshotRefs, []);
+    const clips = asList(params.approvedVideoClipRefs, []);
+    const claims = asList(params.supportedClaims, []);
+    const wantsImages = Boolean(params.wantsRenderedImages);
+    const wantsVideo = Boolean(params.wantsRenderedVideo);
+    const blockers = [
+        ...(params.hasPrivateDataRisk ? ["Private data risk must be cleared before rendering public media."] : []),
+        ...(params.hasUnsupportedClaims ? ["Unsupported claims must be removed or rewritten before rendering."] : []),
+        ...(params.hasWeakScreens ? ["Weak or broken screens should be fixed before final rendered assets."] : []),
+        ...(screenshots.length === 0 ? ["Approved product screenshots are missing."] : []),
+        ...((wantsVideo && clips.length === 0) ? ["Approved video clips are missing; use storyboard-only mode or capture clips first."] : []),
+        ...(!params.hasAssetReview ? ["Final asset review has not been completed."] : []),
+    ];
+    const productionMode = blockers.some((item) => !item.includes("video clips are missing"))
+        ? "blocked"
+        : wantsImages && wantsVideo && clips.length > 0
+            ? "render-full-media-pack"
+            : wantsVideo && clips.length > 0
+                ? "render-video"
+                : wantsImages
+                    ? "render-social-images"
+                    : "prompt-only";
+    const imageFormats = asList(params.imageFormats, [
+        "Product Hunt gallery 1270x760",
+        "LinkedIn image 1200x627",
+        "X/Twitter image 1600x900",
+        "Website hero 16:9",
+    ]);
+    const videoFormats = asList(params.videoFormats, [
+        "30-second horizontal demo 1920x1080",
+        "15-second vertical teaser 1080x1920",
+    ]);
+    return {
+        productName: params.productName,
+        productionMode,
+        positioning: "Create launch media from real product evidence: approved screenshots, approved clips, supported claims, and human-reviewed copy.",
+        sourceReadiness: {
+            screenshots: screenshots.length >= 3 ? "approved" : screenshots.length > 0 ? "partial" : "missing",
+            videoClips: clips.length > 0 ? "approved" : wantsVideo ? "missing" : "optional",
+            claims: claims.length > 0 && params.hasAssetReview ? "approved" : "needs-review",
+            screenQuality: params.hasWeakScreens ? "blocked" : params.hasPrivateDataRisk || params.hasUnsupportedClaims ? "watch" : "ready",
+        },
+        recommendedOutputs: [
+            ...imageFormats.map((format) => ({
+                output: `${params.productName} ${format}`,
+                format,
+                owner: productionMode === "blocked" ? "user" : "image-generator",
+                status: productionMode === "blocked" ? "blocked" : screenshots.length > 0 ? "ready" : "needs-evidence",
+            })),
+            ...videoFormats.map((format) => ({
+                output: `${params.productName} ${format}`,
+                format,
+                owner: clips.length > 0 ? "video-renderer" : "creative-studio",
+                status: clips.length > 0 ? "ready" : "needs-evidence",
+            })),
+        ],
+        renderPipeline: [
+            "Confirm screenshots, clips, claims, and private-data review.",
+            "Run `creative_social_image_render_pack` for platform image specs and prompts.",
+            "Run `creative_video_render_pack` for timeline, source clips, captions, and export targets.",
+            "Use OpenClaw image-generation/design/video tools or an approved external renderer to produce PNG/JPG/MP4 files.",
+            "Run human review before publishing or Product Hunt upload.",
+        ],
+        blockers,
+        approvalGates: [
+            "Approved public screenshots and clips only.",
+            "No private data, secrets, customer data, admin panels, or billing details.",
+            "All rendered text is legible and spellchecked.",
+            "Claims are supported by evidence or user confirmation.",
+            "Final image/video files approved by maker or client.",
+        ],
+        nextTools: [
+            "creative_media_production_plan",
+            "creative_social_image_render_pack",
+            ...(wantsVideo ? ["creative_video_render_pack"] : []),
+            "creative_media_asset_manifest",
+        ],
+    };
+}
+function dimensionsForFormat(format) {
+    const lower = format.toLowerCase();
+    if (lower.includes("product hunt"))
+        return "1270x760";
+    if (lower.includes("linkedin"))
+        return "1200x627";
+    if (lower.includes("twitter") || lower.includes("x/"))
+        return "1600x900";
+    if (lower.includes("vertical") || lower.includes("story") || lower.includes("reel"))
+        return "1080x1920";
+    if (lower.includes("square"))
+        return "1080x1080";
+    if (lower.includes("hero"))
+        return "1920x1080";
+    return "1600x900";
+}
+function makeSocialImageRenderPack(params) {
+    const screenshots = asList(params.approvedScreenshotRefs, ["approved-screenshot-required"]);
+    const claims = asList(params.supportedClaims, ["Use one short evidence-backed product claim."]);
+    const formats = asList(params.formats, [
+        "Product Hunt gallery 1270x760",
+        "LinkedIn launch image 1200x627",
+        "X/Twitter image 1600x900",
+        "Website hero image 16:9",
+    ]);
+    const colors = asList(params.brandColors, ["Use brand colors observed in the captured app."]);
+    const styleDirection = params.styleDirection ?? "Product-led, crisp, credible, readable in social feeds, with the real app screenshot as the hero visual.";
+    return {
+        productName: params.productName,
+        rendererMode: params.rendererMode ?? "openclaw-image-generation",
+        assets: formats.map((format, index) => {
+            const claim = claims[index] ?? claims[0];
+            const screen = screenshots[index] ?? screenshots[0];
+            const dimensions = dimensionsForFormat(format);
+            return {
+                name: `${params.productName} ${format}`,
+                format,
+                dimensions,
+                sourceScreens: [screen],
+                headline: claim,
+                supportingCopy: `${params.productName} shown with real product evidence.`,
+                prompt: [
+                    `Render a final social media image for ${params.productName}.`,
+                    `Canvas: ${dimensions}. Format: ${format}.`,
+                    `Use approved screenshot ${screen} as the primary visual. Keep the app UI recognizable and undistorted.`,
+                    `Headline: ${claim}.`,
+                    `Style: ${styleDirection}`,
+                    `Brand colors: ${colors.join(", ")}.`,
+                    "Use short, legible text. Leave safe margins for social cropping. Do not invent UI, metrics, logos, customers, or integrations.",
+                ].join(" "),
+                negativePrompt: "No fake app screens, no distorted screenshots, no tiny unreadable text, no private data, no unsupported claims, no fake customer logos.",
+                exportName: `${params.productName.toLowerCase().replace(/[^a-z0-9]+/g, "-")}-${format.toLowerCase().replace(/[^a-z0-9]+/g, "-")}.png`,
+            };
+        }),
+        sharedStyleRules: [
+            "Anchor every image in a real approved product screenshot.",
+            "Keep text short enough to read on mobile.",
+            "Do not cover the most important app UI with copy.",
+            "Use the same headline hierarchy across the campaign.",
+            "Export PNG for Product Hunt/gallery and high-quality JPG/PNG for social as needed.",
+        ],
+        reviewChecklist: [
+            "Screenshot is accurate and not distorted.",
+            "Headline is evidence-backed.",
+            "No private data is visible.",
+            "Text is spelled correctly and fits the canvas.",
+            "Image still makes sense when cropped in social feeds.",
+        ],
+    };
+}
+function makeVideoRenderPack(params) {
+    const duration = params.durationSeconds ?? 30;
+    const orientation = params.orientation ?? "horizontal";
+    const screenshots = asList(params.approvedScreenshotRefs, ["approved-screenshot-required"]);
+    const clips = asList(params.approvedVideoClipRefs, []);
+    const claims = asList(params.supportedClaims, [`${params.productName} helps users complete the main workflow with less friction.`]);
+    const source = (index) => clips[index] ?? screenshots[index] ?? screenshots[0];
+    const timeline = duration <= 15
+        ? [
+            ["0-3s", "Hook", source(0), "Quick zoom into the strongest product screen.", claims[0]],
+            ["3-9s", "Workflow", source(1), "Cut through the main product flow with simple cursor or pan motion.", claims[1] ?? "Show the core workflow."],
+            ["9-13s", "Proof", source(2), "Hold on the clearest proof/result screen.", claims[2] ?? "Show one visible result."],
+            ["13-15s", "CTA", source(0), "End card with product name and URL.", `Try ${params.productName}.`],
+        ]
+        : [
+            ["0-4s", "Hook", source(0), "Open with product UI and a bold caption.", claims[0]],
+            ["4-9s", "Product reveal", source(0), "Slow zoom on the app shell or homepage.", `${params.productName} in action.`],
+            ["9-16s", "Main workflow", source(1), "Show the entry, middle, and success state of the primary flow.", claims[1] ?? "Complete the core workflow."],
+            ["16-23s", "Feature proof", source(2), "Show supporting feature screens with concise captions.", claims[2] ?? "Highlight visible supporting features."],
+            ["23-27s", "Audience fit", source(3), "Show proof, pricing, integrations, or mobile if available.", claims[3] ?? "Built for the target audience."],
+            ["27-30s", "CTA", source(0), "End card with product name, URL, and launch CTA.", `Launch with ${params.productName}.`],
+        ];
+    return {
+        productName: params.productName,
+        rendererMode: params.rendererMode ?? (clips.length > 0 ? "screen-recording-edit" : "storyboard-only"),
+        durationSeconds: duration,
+        orientation,
+        timeline: timeline.map(([time, scene, sceneSource, motion, onScreenText]) => ({
+            time,
+            scene,
+            source: sceneSource,
+            motion,
+            onScreenText,
+            voiceover: params.includeVoiceover ? onScreenText : null,
+        })),
+        assetsNeeded: [
+            ...screenshots.map((item) => `Screenshot: ${item}`),
+            ...(clips.length > 0 ? clips.map((item) => `Clip: ${item}`) : ["Optional: approved screen recording clips for smoother motion."]),
+            "Product logo or wordmark if approved.",
+            "Product URL or launch CTA.",
+        ],
+        renderNotes: [
+            "Use real captured screens or approved screen recordings.",
+            "Prefer simple motion: cuts, pans, zooms, and cursor highlights.",
+            "Use captions large enough for mobile social feeds.",
+            "Do not add unsupported feature claims or fake UI states.",
+            "Export without private data and review before upload.",
+        ],
+        exportTargets: orientation === "vertical"
+            ? ["MP4 1080x1920 for short-form social", "Poster frame PNG 1080x1920"]
+            : orientation === "square"
+                ? ["MP4 1080x1080 for feed posts", "Poster frame PNG 1080x1080"]
+                : ["MP4 1920x1080 for Product Hunt/demo", "Poster frame PNG 1600x900"],
+        reviewChecklist: [
+            "No private or sensitive data visible in any frame.",
+            "Captions are readable at mobile size.",
+            "Timing feels clear without rushing the UI.",
+            "Claims match the evidence map.",
+            "Final MP4 plays cleanly from start to finish.",
+        ],
+    };
+}
+function makeMediaAssetManifest(params) {
+    const packageName = params.packageName ?? "launch-media";
+    const productionMode = params.productionPlan?.productionMode ?? "prompt-only";
+    const files = [
+        {
+            path: `${packageName}/media-production-plan.json`,
+            format: "json",
+            purpose: "Production mode, source readiness, blockers, pipeline, approvals, and next tools.",
+            content: JSON.stringify(params.productionPlan ?? { productName: params.productName, productionMode }, null, 2),
+        },
+    ];
+    if (params.socialImageRenderPack) {
+        files.push({
+            path: `${packageName}/social-image-render-pack.json`,
+            format: "json",
+            purpose: "Final social image specs, prompts, source screenshots, export names, and review checklist.",
+            content: JSON.stringify(params.socialImageRenderPack, null, 2),
+        });
+        files.push({
+            path: `${packageName}/social-image-prompts.md`,
+            format: "markdown",
+            purpose: "Human-readable prompts for image-generation or design handoff.",
+            content: [
+                `# ${params.productName} Social Image Prompts`,
+                "",
+                ...params.socialImageRenderPack.assets.flatMap((asset) => [
+                    `## ${asset.name}`,
+                    `Format: ${asset.format}`,
+                    `Dimensions: ${asset.dimensions}`,
+                    `Export: ${asset.exportName}`,
+                    "",
+                    asset.prompt,
+                    "",
+                    `Negative prompt: ${asset.negativePrompt}`,
+                    "",
+                ]),
+            ].join("\n"),
+        });
+    }
+    if (params.videoRenderPack) {
+        files.push({
+            path: `${packageName}/video-render-pack.json`,
+            format: "json",
+            purpose: "Video renderer mode, timeline, source assets, export targets, and review checklist.",
+            content: JSON.stringify(params.videoRenderPack, null, 2),
+        });
+        files.push({
+            path: `${packageName}/video-timeline.md`,
+            format: "markdown",
+            purpose: "Human-readable video timeline for editor, renderer, or producer.",
+            content: [
+                `# ${params.productName} Video Timeline`,
+                "",
+                ...params.videoRenderPack.timeline.map((scene) => `- ${scene.time}: ${scene.scene}. Source: ${scene.source}. Motion: ${scene.motion}. Text: ${scene.onScreenText}`),
+            ].join("\n"),
+        });
+    }
+    return {
+        productName: params.productName,
+        packageName,
+        productionMode,
+        files,
+        nextActions: [
+            "Send JSON packs to the selected renderer or OpenClaw media tool.",
+            "Render PNG/JPG social images and MP4 video files from approved sources.",
+            "Run human review against the checklist before Product Hunt or social upload.",
+        ],
+    };
+}
 function makeCreativeStudioBrain(params) {
     const workflowState = makeCreativeWorkflowState(params);
     const productName = params.productName ?? "Lovable app";
@@ -3100,6 +3381,95 @@ export default definePluginEntry({
             }),
             async execute(_id, params) {
                 return jsonText(makeVideoStoryboard(params));
+            },
+        });
+        api.registerTool({
+            name: "creative_media_production_plan",
+            label: "Plan Media Production",
+            description: "Choose whether Creative Studio should stay prompt-only, render social images, render video, or produce a full launch media pack from approved product evidence.",
+            parameters: Type.Object({
+                productName: Type.String(),
+                websiteUrl: Type.Optional(Type.String()),
+                launchGoal: Type.Optional(Type.String()),
+                targetChannels: optionalStringArray("Launch channels such as Product Hunt, LinkedIn, X, website, ads, or client report."),
+                wantsRenderedImages: Type.Optional(Type.Boolean()),
+                wantsRenderedVideo: Type.Optional(Type.Boolean()),
+                approvedScreenshotRefs: optionalStringArray("Approved public screenshot references."),
+                approvedVideoClipRefs: optionalStringArray("Approved public video clip references."),
+                supportedClaims: optionalStringArray("Evidence-backed claims approved for media."),
+                hasAssetReview: Type.Optional(Type.Boolean()),
+                hasPrivateDataRisk: Type.Optional(Type.Boolean()),
+                hasUnsupportedClaims: Type.Optional(Type.Boolean()),
+                hasWeakScreens: Type.Optional(Type.Boolean()),
+                imageFormats: optionalStringArray("Social image formats to render."),
+                videoFormats: optionalStringArray("Video formats to render."),
+                preferredRenderer: Type.Optional(Type.String()),
+            }),
+            async execute(_id, params) {
+                return jsonText(makeMediaProductionPlan(params));
+            },
+        });
+        api.registerTool({
+            name: "creative_social_image_render_pack",
+            label: "Create Social Image Render Pack",
+            description: "Create final social image render specs and prompts for Product Hunt, LinkedIn, X, website hero, and other campaign formats from approved screenshots.",
+            parameters: Type.Object({
+                productName: Type.String(),
+                approvedScreenshotRefs: optionalStringArray("Approved public screenshot references."),
+                supportedClaims: optionalStringArray("Evidence-backed claims approved for media."),
+                formats: optionalStringArray("Social image formats to render."),
+                brandColors: optionalStringArray("Observed or approved brand colors."),
+                styleDirection: Type.Optional(Type.String()),
+                rendererMode: Type.Optional(Type.Union([
+                    Type.Literal("openclaw-image-generation"),
+                    Type.Literal("design-tool"),
+                    Type.Literal("manual-designer"),
+                ])),
+            }),
+            async execute(_id, params) {
+                return jsonText(makeSocialImageRenderPack(params));
+            },
+        });
+        api.registerTool({
+            name: "creative_video_render_pack",
+            label: "Create Video Render Pack",
+            description: "Create final video render specs: timeline, source screenshots/clips, captions, motion notes, export targets, and review checklist for MP4 production.",
+            parameters: Type.Object({
+                productName: Type.String(),
+                approvedScreenshotRefs: optionalStringArray("Approved public screenshot references."),
+                approvedVideoClipRefs: optionalStringArray("Approved public video clip references."),
+                supportedClaims: optionalStringArray("Evidence-backed claims approved for video."),
+                durationSeconds: Type.Optional(Type.Number()),
+                orientation: Type.Optional(Type.Union([
+                    Type.Literal("horizontal"),
+                    Type.Literal("vertical"),
+                    Type.Literal("square"),
+                ])),
+                includeVoiceover: Type.Optional(Type.Boolean()),
+                rendererMode: Type.Optional(Type.Union([
+                    Type.Literal("storyboard-only"),
+                    Type.Literal("screen-recording-edit"),
+                    Type.Literal("remotion-ffmpeg"),
+                    Type.Literal("video-provider"),
+                ])),
+            }),
+            async execute(_id, params) {
+                return jsonText(makeVideoRenderPack(params));
+            },
+        });
+        api.registerTool({
+            name: "creative_media_asset_manifest",
+            label: "Create Media Asset Manifest",
+            description: "Package media production outputs into handoff files for renderers: production plan, social image prompts/specs, video timeline/specs, and next actions.",
+            parameters: Type.Object({
+                productName: Type.String(),
+                packageName: Type.Optional(Type.String()),
+                productionPlan: Type.Optional(Type.Any()),
+                socialImageRenderPack: Type.Optional(Type.Any()),
+                videoRenderPack: Type.Optional(Type.Any()),
+            }),
+            async execute(_id, params) {
+                return jsonText(makeMediaAssetManifest(params));
             },
         });
         api.registerTool({
